@@ -234,7 +234,7 @@ private:
 	DeNovoLLCImpl* llcImpl;
 	uint32_t numLines;
 	g_string name;
-9
+
 public:
 	//Initialization
 	DeNovoCC(uint32_t _numLines, g_string& _name) : //<MESI> tcc(nullptr), bcc(nullptr),
