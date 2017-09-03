@@ -42,7 +42,10 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType
     uint64_t respCycle = cycle;
 	DeNovoState* state = &deNovoStatesArray[lineId];
     trace("address: %lx , line id: %d , access type: %s , state: %s", lineAddr, lineId, AccessTypeName(type), DeNovoStateName(*state)); 
-    switch (type) {
+	if (state){
+
+	}
+	switch (type) {
         // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
         case PUTS: //Clean writeback, nothing to do (except profiling)
             //assert(*state != I);
