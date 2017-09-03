@@ -32,13 +32,13 @@ uint64_t SimpleMemory::access(MemReq& req) {
     switch (req.type) {
         case PUTS:
         case PUTX:
-            *req.state = I;
+			//<MESI>*req.state = I;
             break;
         case GETS:
-            *req.state = req.is(MemReq::NOEXCL)? S : E;
+			//<MESI>*req.state = req.is(MemReq::NOEXCL)? S : E;
             break;
         case GETX:
-            *req.state = M;
+			//<MESI>*req.state = M;
             break;
 
         default: panic("!?");
