@@ -44,7 +44,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType
 	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
 	}
-	DeNovoState* state = &deNovoStatesArray[lineId];
+	//DeNovoState* state = &deNovoStatesArray[lineId];
     	
 	switch (type) {
         // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
