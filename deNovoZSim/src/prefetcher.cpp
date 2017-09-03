@@ -154,7 +154,7 @@ uint64_t StreamPrefetcher::access(MemReq& req) {
                         profDoublePrefetches.inc();
                     }
                     e.lastPrefetchPos = prefetchPos;
-                    assert(state == I);  // prefetch access should not give us any permissions
+                    assert(state == Invalid);  // prefetch access should not give us any permissions
                 }
             } else {
                 profLowConfAccs.inc();

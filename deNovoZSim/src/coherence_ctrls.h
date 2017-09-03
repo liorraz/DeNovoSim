@@ -142,7 +142,9 @@ public:
 		//invalidations. The alternative with this would be to capture these blocks, since we have space anyway. This is so rare is doesn't matter,
 		//but if we do proper NI/EX mid-level caches backed by directories, this may start becoming more common (and it is perfectly acceptable to
 		//upgrade without any interaction with the parent... the child had the permissions!)
-		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX)) && !bcc->isValid(lineId))) { //can only be a non-inclusive wback
+		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))  
+			//MESI && !bcc->isValid(lineId)
+			)){ //can only be a non-inclusive wback
 			assert(nonInclusiveHack);
 			assert((req.type == PUTS) || (req.type == PUTX));
 			respCycle = startCycle;//<MESI> bcc->processNonInclusiveWriteback(req.lineAddr, req.type, startCycle, req.state, req.srcId, req.flags);
@@ -154,18 +156,18 @@ public:
 			uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
 
 			//if needed, fetch line or upgrade miss from upper level
-			respCycle = bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
+			respCycle = startCycle;//<MESI> bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
 			if (getDoneCycle) *getDoneCycle = respCycle;
 			if (!isPrefetch) { //prefetches only touch bcc; the demand request from the core will pull the line to lower level
 				//At this point, the line is in a good state w.r.t. upper levels
-				bool lowerLevelWriteback = false;
+				//bool lowerLevelWriteback = false;
 				//change directory info, invalidate other children if needed, tell requester about its state
-				respCycle = startCycle;//<MESI> tcc->processAccess(req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state,
-					&lowerLevelWriteback, respCycle, req.srcId, flags);
-				if (lowerLevelWriteback) {
-					//Essentially, if tcc induced a writeback, bcc may need to do an E->M transition to reflect that the cache now has dirty data
-					//<MESI> bcc->processWritebackOnAccess(req.lineAddr, lineId, req.type);
-				}
+				respCycle = startCycle;
+				//<MESI> tcc->processAccess(req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state, &lowerLevelWriteback, respCycle, req.srcId, flags);
+				//<MESI>if (lowerLevelWriteback) {
+				//<MESI>	//Essentially, if tcc induced a writeback, bcc may need to do an E->M transition to reflect that the cache now has dirty data
+				//<MESI> bcc->processWritebackOnAccess(req.lineAddr, lineId, req.type);
+				//<MESI>}
 			}
 		}
 		return respCycle;
