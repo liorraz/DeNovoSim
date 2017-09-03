@@ -192,7 +192,7 @@ public:
 		assert(lineId != -1);
 		assert(!getDoneCycle);
 		//if needed, fetch line or upgrade miss from upper level
-		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
+		uint64_t respCycle = startCycle;// impl->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
 		//at this point, the line is in a good state w.r.t. upper levels
 		return respCycle;
 	}
