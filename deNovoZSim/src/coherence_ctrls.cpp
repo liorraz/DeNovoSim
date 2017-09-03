@@ -38,9 +38,9 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 
 
-uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
+uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     uint64_t respCycle = cycle;
-	if (lineId > DeNovoImpl::numLines) {
+	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
 	}
 	//DeNovoState* state = &deNovoStatesArray[lineId];

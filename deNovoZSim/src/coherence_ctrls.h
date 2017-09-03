@@ -68,7 +68,6 @@ class DeNovoImpl{
 private:
 	DeNovoState* deNovoStatesArray;
 	MemObject* parent;
-	const uint32_t numLines;
 	uint32_t selfId;
 
 	PAD();
@@ -76,10 +75,10 @@ private:
 	PAD();
 
 public:
-	DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : numLines(_numLines), selfId(_selfId) {
-		deNovoStatesArray = gm_calloc<DeNovoState>(numLines);
-		info("number of lines in DeNovoImpl is: %u", numLines);
-		for (uint32_t i = 0; i < numLines; i++) {
+	DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : selfId(_selfId) {
+		deNovoStatesArray = gm_calloc<DeNovoState>(_numLines);
+		info("number of lines in DeNovoImpl is: %u", _numLines);
+		for (uint32_t i = 0; i < _numLines; i++) {
 			deNovoStatesArray[i] = Invalid;
 		}
 		futex_init(&ccLock);
@@ -87,7 +86,7 @@ public:
 
 	void init(MemObject* _parent, Network* network, const char* name);
 
-	uint64_t processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
+	uint64_t processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
 
 	inline void lock() {
 		futex_lock(&ccLock);
@@ -194,7 +193,7 @@ public:
 		assert(!getDoneCycle);
 		//if needed, fetch line or upgrade miss from upper level
 		info("HHH [%s] line id %d number of lines %u", name.c_str(), lineId, numLines);
-		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
+		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId,numLines, req.type, startCycle, req.srcId, req.flags);
 		//at this point, the line is in a good state w.r.t. upper levels
 		return respCycle;
 	}
