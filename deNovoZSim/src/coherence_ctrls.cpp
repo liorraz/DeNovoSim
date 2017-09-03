@@ -40,8 +40,8 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     uint64_t respCycle = cycle;
-	DeNovoState* state = &deNovoStatesArray[lineId];
-    info("address: %lx , line id: %d , access type: %s , state: %s", lineAddr, lineId, AccessTypeName(type), DeNovoStateName(*state)); 
+	//DeNovoState* state = &deNovoStatesArray[lineId];
+    //info("address: %lx , line id: %d , access type: %s , state: %s", lineAddr, lineId, AccessTypeName(type), DeNovoStateName(*state)); 
     switch (type) {
         // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
         case PUTS: //Clean writeback, nothing to do (except profiling)
@@ -99,7 +99,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType
             //assert_msg(*state == M, "Wrong final state on GETX, lineId %d numLines %d, finalState %s", lineId, numLines, MESIStateName(*state));
             break;
 
-        //default: panic("!?");
+        default: panic("!?");
     }
     assert_msg(respCycle >= cycle, "XXX %ld %ld", respCycle, cycle);
     return respCycle;
