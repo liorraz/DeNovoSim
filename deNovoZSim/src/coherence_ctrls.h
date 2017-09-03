@@ -129,7 +129,7 @@ public:
 	}
 
 	uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) {
-		bool lowerLevelWriteback = false;
+		//bool lowerLevelWriteback = false;
 		uint64_t evCycle = startCycle;//<MESI> tcc->processEviction(wbLineAddr, lineId, &lowerLevelWriteback, startCycle, triggerReq.srcId); //1. if needed, send invalidates/downgrades to lower level
 		evCycle = startCycle;//<MESI> bcc->processEviction(wbLineAddr, lineId, lowerLevelWriteback, evCycle, triggerReq.srcId); //2. if needed, write back line to upper level
 		return evCycle;
@@ -153,7 +153,7 @@ public:
 			//Prefetches are side requests and get handled a bit differently
 			bool isPrefetch = req.flags & MemReq::PREFETCH;
 			assert(!isPrefetch || req.type == GETS);
-			uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
+			//<MESI>uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
 
 			//if needed, fetch line or upgrade miss from upper level
 			respCycle = startCycle;//<MESI> bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
