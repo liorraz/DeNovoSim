@@ -161,8 +161,7 @@
 //    sysFreqKHz = 1000 * _sysFreqMHz;
 //    initTech(tech);  // sets all tXX and memFreqKHz
 //    if (memFreqKHz >= sysFreqKHz/2) {
-//        panic("You may need to tweak the scheduling code, which works with system cycles." \
-//            "With these frequencies, events (which run on system cycles) can't hit us every memory cycle.");
+//        panic("You may need to tweak the scheduling code, which works with system cycles. With these frequencies, events (which run on system cycles) can't hit us every memory cycle.");
 //    }
 //
 //    minRdLatency = controllerSysLatency + memToSysCycle(tCL+tBL-1);
