@@ -263,11 +263,11 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
     Cache* cache;
     CC* cc;
     if (isTerminal) {
-	info("MESI TERMINAL for name %s", name.c_str());
-        cc = new MESITerminalCC(numLines, name);
+	info("De Novo TERMINAL for name %s", name.c_str());
+        cc = new DeNovoTerminalCC(numLines, name);
     } else {
 	info("MESI for name %s",name.c_str());
-        cc = new MESICC(numLines, nonInclusiveHack, name);
+		cc = new DeNovoCC(numLines, nonInclusiveHack, name);
     }
     rp->setCC(cc);
     if (!isTerminal) {
