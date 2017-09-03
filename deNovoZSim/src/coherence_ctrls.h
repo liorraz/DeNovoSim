@@ -133,7 +133,7 @@ public:
 class DeNovoTerminalCC : public CC {
 private:
 	DeNovoImpl* impl;
-	uint32_t numLines;
+	const uint32_t numLines;
 	g_string name;
 
 public:
