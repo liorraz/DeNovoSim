@@ -83,9 +83,7 @@ class DeNovoImpl{
 	            futex_init(&ccLock);
 	        }
 	
-			void init(MemObject* _parent, Network* network, const char* name){
-				parent = _parent;
-			}
+			void init(MemObject* _parent, Network* network, const char* name);
 	
 
 

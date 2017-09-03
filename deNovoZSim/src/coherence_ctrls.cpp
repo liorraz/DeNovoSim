@@ -26,6 +26,14 @@
 #include "coherence_ctrls.h"
 #include "cache.h"
 #include "network.h"
+#include <typeinfo>
+
+
+void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
+	info("init parent with name %s and type %s", _parent->getName(), typeid(_parent).name());
+	parent = _parent;
+}
+
 
 
 
