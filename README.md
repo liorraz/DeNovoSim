@@ -25,4 +25,6 @@ Compile & Run: regularly, like zsim *only with linux OS kernal 3.x:
 ```
 	 
 Note:
-	some of the implementation and properties were commented out from the original code, since their usage of MESI protocol.
+	1. some of the implementation and properties were commented out from the original code, since their usage of MESI protocol.
+	
+	2. for simplicity, assumed only 2 levels of cache: any number of L1 and single L2 which is the LLC (Last Level Cache), so each "parent" of a chace is the LLC.

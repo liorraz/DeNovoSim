@@ -60,9 +60,9 @@ typedef enum {
 
 /* Coherence states for the MESI protocol */
 typedef enum {
-    Invalid, 
-    Valid,
-    Registerd, 
+    Invalid,    // no data available
+	Valid,      // the most up-to-date data is in the LLC
+    Registerd,  // the most up-to-date data is in the core’s cache, while the LLC points to that core
 } DeNovoState;
 
 //Convenience methods for clearer debug traces

@@ -62,20 +62,20 @@ class CC : public GlobAlloc {
 };
 
 
-// De Novo CC
+// DeNovo CC
 // Non-terminal CC; accepts GETS/X and PUTS/X accesses
+// Lior: this is the LLC
 class DeNovoCC : public CC {
 private:
 	//<MESI> MESITopCC* tcc;
 	//<MESI> MESIBottomCC* bcc;
 	uint32_t numLines;
-	bool nonInclusiveHack;
 	g_string name;
 
 public:
 	//Initialization
 	DeNovoCC(uint32_t _numLines, bool _nonInclusiveHack, g_string& _name) : //<MESI> tcc(nullptr), bcc(nullptr),
-		numLines(_numLines), nonInclusiveHack(_nonInclusiveHack), name(_name) {}
+		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
 		//<MESI> bcc = new MESIBottomCC(numLines, childId, nonInclusiveHack);
@@ -120,10 +120,10 @@ public:
 		}
 		else {
 			assert((req.type == PUTS) || (req.type == PUTX));
-			if (!nonInclusiveHack) {
-				panic("[%s] We lost inclusion on this line! 0x%lx, type %s, childId %d, childState %s", name.c_str(),
-					req.lineAddr, AccessTypeName(req.type), req.childId, DeNovoStateName(*req.state));
-			}
+			//if (!nonInclusiveHack) {
+			//	panic("[%s] We lost inclusion on this line! 0x%lx, type %s, childId %d, childState %s", name.c_str(),
+			//		req.lineAddr, AccessTypeName(req.type), req.childId, DeNovoStateName(*req.state));
+			//}
 			return false;
 		}
 	}
@@ -206,7 +206,7 @@ public:
 };
 
 // Terminal CC, i.e., without children --- accepts GETS/X, but not PUTS/X
-// Lior: this is the LLC
+// for simplicity we assume only 2 level of caches - so parent is always signel as
 class DeNovoTerminalCC : public CC {
 private:
 	//<MESI> MESIBottomCC* bcc;
