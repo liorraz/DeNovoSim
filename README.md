@@ -1,8 +1,12 @@
 DeNovo zsim
 ====
 A zsim implementation which use DeNovo Cache Coherence protocal, instead of the original MESI protocol.
-End Project for TAU course 0368418301 - Advanced Topics in Multicore Architecture and Software Syste
+
+End Project for TAU course 0368418301 - Advanced Topics in Multicore Architecture and Software Systems
+
+
 Lecturer: Adam Morrison
+
 Student: Lior Raz
 
 Note:
