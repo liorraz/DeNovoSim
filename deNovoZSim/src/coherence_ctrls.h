@@ -243,7 +243,7 @@ public:
 // for simplicity we assume only 2 level of caches - so parent is always signel as
 class DeNovoTerminalCC : public CC {
 private:
-	//<MESI> MESIBottomCC* bcc;
+	DeNovoImpl* impl;
 	uint32_t numLines;
 	g_string name;
 
@@ -253,12 +253,12 @@ public:
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
-		//<MESI> bcc = new MESIBottomCC(numLines, childId, false /*inclusive*/);
-		//<MESI> bcc->init(parents, network, name.c_str());
 		info("Set parents called on DeNovoTerminalCC with nanme: %s", name.c_str());
 		if (parents.size() > 1){
 			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
 		}
+		impl = new DeNovoImpl(numLines, childId);
+		impl->init(parents[0], network, name.c_str());
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
