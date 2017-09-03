@@ -79,10 +79,10 @@ uint64_t TraceDriver::invalidate(uint32_t childId, Address lineAddr, InvType typ
     std::unordered_map<Address, DeNovoState>& cStore = children[childId].cStore;
 	std::unordered_map<Address, DeNovoState>::iterator it = cStore.find(lineAddr);
     assert((it != cStore.end()));
-    *reqWriteback = (it->second == M);
+	//<MESI>*reqWriteback = (it->second == M);
     if (type == INVX) {
-        it->second = S;
-        children[childId].profInvx.inc();
+		//<MESI>it->second = S;
+		//<MESI>children[childId].profInvx.inc();
     } else {
         cStore.erase(it);
         if (srcId == childId) {
