@@ -778,7 +778,7 @@ static void InitSystem(Config& config) {
     for (pair<string, CacheGroup*> kv : cMap) delete kv.second;
     cMap.clear();
 
-    info("Lior Raz Initialized system with De Novo");
+    info("Lior Raz Initialized system with De Novo pass compilation");
 }
 
 static void PreInitStats() {
