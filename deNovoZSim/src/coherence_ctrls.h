@@ -74,7 +74,7 @@ private:
 
 public:
 	//Initialization
-	DeNovoCC(uint32_t _numLines, bool _nonInclusiveHack, g_string& _name) : //<MESI> tcc(nullptr), bcc(nullptr),
+	DeNovoCC(uint32_t _numLines, g_string& _name) : //<MESI> tcc(nullptr), bcc(nullptr),
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
