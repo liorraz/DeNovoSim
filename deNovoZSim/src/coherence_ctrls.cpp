@@ -40,7 +40,7 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     uint64_t respCycle = cycle;
-	info("HHH line id %u number of lines %u", lineId, numLines);
+	info("[%s] HHH line id %u number of lines %u self ID %u", lineId, numLines, selfId);
 	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
 	}
