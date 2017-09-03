@@ -112,7 +112,7 @@ private:
 	PAD();
 public:
 	DeNovoLLCImpl(uint32_t _numLines) : numLines(_numLines) {
-
+		info("number of lines in DeNovoLLCImpl is: %u", numLines);
 		futex_init(&ccLock);
 	}
 
