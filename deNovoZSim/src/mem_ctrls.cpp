@@ -32,13 +32,13 @@ uint64_t SimpleMemory::access(MemReq& req) {
     switch (req.type) {
         case PUTS:
         case PUTX:
-			//<MESI>*req.state = I;
+            *req.state = I;
             break;
         case GETS:
-			//<MESI>*req.state = req.is(MemReq::NOEXCL)? S : E;
+            *req.state = req.is(MemReq::NOEXCL)? S : E;
             break;
         case GETX:
-			//<MESI>*req.state = M;
+            *req.state = M;
             break;
 
         default: panic("!?");
@@ -106,42 +106,42 @@ void MD1Memory::updateLatency() {
     lastPhase = zinfo->numPhases;
 }
 
-//uint64_t MD1Memory::access(MemReq& req) {
-//    if (zinfo->numPhases > lastPhase) {
-//        futex_lock(&updateLock);
-//        //Recheck, someone may have updated already
-//        if (zinfo->numPhases > lastPhase) {
-//            updateLatency();
-//        }
-//        futex_unlock(&updateLock);
-//    }
-//
-//    switch (req.type) {
-//        case PUTX:
-//            //Dirty wback
-//            profWrites.atomicInc();
-//            profTotalWrLat.atomicInc(curLatency);
-//            __sync_fetch_and_add(&curPhaseAccesses, 1);
-//            //Note no break
-//        case PUTS:
-//            //Not a real access -- memory must treat clean wbacks as if they never happened.
-//            *req.state = I;
-//            break;
-//        case GETS:
-//            profReads.atomicInc();
-//            profTotalRdLat.atomicInc(curLatency);
-//            __sync_fetch_and_add(&curPhaseAccesses, 1);
-//            *req.state = req.is(MemReq::NOEXCL)? S : E;
-//            break;
-//        case GETX:
-//            profReads.atomicInc();
-//            profTotalRdLat.atomicInc(curLatency);
-//            __sync_fetch_and_add(&curPhaseAccesses, 1);
-//            *req.state = M;
-//            break;
-//
-//        default: panic("!?");
-//    }
-//    return req.cycle + ((req.type == PUTS)? 0 /*PUTS is not a real access*/ : curLatency);
-//}
+uint64_t MD1Memory::access(MemReq& req) {
+    if (zinfo->numPhases > lastPhase) {
+        futex_lock(&updateLock);
+        //Recheck, someone may have updated already
+        if (zinfo->numPhases > lastPhase) {
+            updateLatency();
+        }
+        futex_unlock(&updateLock);
+    }
+
+    switch (req.type) {
+        case PUTX:
+            //Dirty wback
+            profWrites.atomicInc();
+            profTotalWrLat.atomicInc(curLatency);
+            __sync_fetch_and_add(&curPhaseAccesses, 1);
+            //Note no break
+        case PUTS:
+            //Not a real access -- memory must treat clean wbacks as if they never happened.
+            *req.state = Invalid;
+            break;
+        case GETS:
+            profReads.atomicInc();
+            profTotalRdLat.atomicInc(curLatency);
+            __sync_fetch_and_add(&curPhaseAccesses, 1);
+			//<MESI> *req.state = req.is(MemReq::NOEXCL)? S : E;
+            break;
+        case GETX:
+            profReads.atomicInc();
+            profTotalRdLat.atomicInc(curLatency);
+            __sync_fetch_and_add(&curPhaseAccesses, 1);
+            //<MESI> *req.state = M;
+            break;
+
+        default: panic("!?");
+    }
+    return req.cycle + ((req.type == PUTS)? 0 /*PUTS is not a real access*/ : curLatency);
+}
 
