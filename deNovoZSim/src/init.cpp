@@ -300,30 +300,31 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
     return cache;
 }
 
+//<MESI> removed DDRMemory
 // NOTE: frequency is SYSTEM frequency; mem freq specified in tech
-DDRMemory* BuildDDRMemory(Config& config, uint32_t lineSize, uint32_t frequency, uint32_t domain, g_string name, const string& prefix) {
-    uint32_t ranksPerChannel = config.get<uint32_t>(prefix + "ranksPerChannel", 4);
-    uint32_t banksPerRank = config.get<uint32_t>(prefix + "banksPerRank", 8);  // DDR3 std is 8
-    uint32_t pageSize = config.get<uint32_t>(prefix + "pageSize", 8*1024);  // 1Kb cols, x4 devices
-    const char* tech = config.get<const char*>(prefix + "tech", "DDR3-1333-CL10");  // see cpp file for other techs
-    const char* addrMapping = config.get<const char*>(prefix + "addrMapping", "rank:col:bank");  // address splitter interleaves channels; row always on top
-
-    // If set, writes are deferred and bursted out to reduce WTR overheads
-    bool deferWrites = config.get<bool>(prefix + "deferWrites", true);
-    bool closedPage = config.get<bool>(prefix + "closedPage", true);
-
-    // Max row hits before we stop prioritizing further row hits to this bank.
-    // Balances throughput and fairness; 0 -> FCFS / high (e.g., -1) -> pure FR-FCFS
-    uint32_t maxRowHits = config.get<uint32_t>(prefix + "maxRowHits", 4);
-
-    // Request queues
-    uint32_t queueDepth = config.get<uint32_t>(prefix + "queueDepth", 16);
-    uint32_t controllerLatency = config.get<uint32_t>(prefix + "controllerLatency", 10);  // in system cycles
-
-    auto mem = new DDRMemory(zinfo->lineSize, pageSize, ranksPerChannel, banksPerRank, frequency, tech,
-            addrMapping, controllerLatency, queueDepth, maxRowHits, deferWrites, closedPage, domain, name);
-    return mem;
-}
+//DDRMemory* BuildDDRMemory(Config& config, uint32_t lineSize, uint32_t frequency, uint32_t domain, g_string name, const string& prefix) {
+//    uint32_t ranksPerChannel = config.get<uint32_t>(prefix + "ranksPerChannel", 4);
+//    uint32_t banksPerRank = config.get<uint32_t>(prefix + "banksPerRank", 8);  // DDR3 std is 8
+//    uint32_t pageSize = config.get<uint32_t>(prefix + "pageSize", 8*1024);  // 1Kb cols, x4 devices
+//    const char* tech = config.get<const char*>(prefix + "tech", "DDR3-1333-CL10");  // see cpp file for other techs
+//    const char* addrMapping = config.get<const char*>(prefix + "addrMapping", "rank:col:bank");  // address splitter interleaves channels; row always on top
+//
+//    // If set, writes are deferred and bursted out to reduce WTR overheads
+//    bool deferWrites = config.get<bool>(prefix + "deferWrites", true);
+//    bool closedPage = config.get<bool>(prefix + "closedPage", true);
+//
+//    // Max row hits before we stop prioritizing further row hits to this bank.
+//    // Balances throughput and fairness; 0 -> FCFS / high (e.g., -1) -> pure FR-FCFS
+//    uint32_t maxRowHits = config.get<uint32_t>(prefix + "maxRowHits", 4);
+//
+//    // Request queues
+//    uint32_t queueDepth = config.get<uint32_t>(prefix + "queueDepth", 16);
+//    uint32_t controllerLatency = config.get<uint32_t>(prefix + "controllerLatency", 10);  // in system cycles
+//
+//    auto mem = new DDRMemory(zinfo->lineSize, pageSize, ranksPerChannel, banksPerRank, frequency, tech,
+//            addrMapping, controllerLatency, queueDepth, maxRowHits, deferWrites, closedPage, domain, name);
+//    return mem;
+//}
 
 MemObject* BuildMemoryController(Config& config, uint32_t lineSize, uint32_t frequency, uint32_t domain, g_string& name) {
     //Type
