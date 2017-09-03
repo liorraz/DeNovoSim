@@ -335,15 +335,15 @@ MemObject* BuildMemoryController(Config& config, uint32_t lineSize, uint32_t fre
     MemObject* mem = nullptr;
     if (type == "Simple") {
         mem = new SimpleMemory(latency, name);
-    } else if (type == "MD1") {
-        // The following params are for MD1 only
-        // NOTE: Frequency (in MHz) -- note this is a sys parameter (not sys.mem). There is an implicit assumption of having
-        // a single CCT across the system, and we are dealing with latencies in *core* clock cycles
+	//<MESI>} else if (type == "MD1") {
+    //<MESI>    // The following params are for MD1 only
+    //<MESI>    // NOTE: Frequency (in MHz) -- note this is a sys parameter (not sys.mem). There is an implicit assumption of having
+    //<MESI>    // a single CCT across the system, and we are dealing with latencies in *core* clock cycles
 
-        // Peak bandwidth (in MB/s)
-        uint32_t bandwidth = config.get<uint32_t>("sys.mem.bandwidth", 6400);
+    //<MESI>       // Peak bandwidth (in MB/s)
+	//<MESI>    uint32_t bandwidth = config.get<uint32_t>("sys.mem.bandwidth", 6400);
 
-        mem = new MD1Memory(lineSize, frequency, bandwidth, latency, name);
+	//<MESI>   mem = new MD1Memory(lineSize, frequency, bandwidth, latency, name);
     } else if (type == "WeaveMD1") {
         uint32_t bandwidth = config.get<uint32_t>("sys.mem.bandwidth", 6400);
         uint32_t boundLatency = config.get<uint32_t>("sys.mem.boundLatency", latency);
