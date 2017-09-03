@@ -40,7 +40,7 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     uint64_t respCycle = cycle;
-	DeNovoState* state = &deNovoStatesArray[lineId];
+	//DeNovoState* state = &deNovoStatesArray[lineId];
     info("test test"); 
 	
 	switch (type) {
