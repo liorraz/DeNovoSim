@@ -143,9 +143,9 @@ public:
 		//but if we do proper NI/EX mid-level caches backed by directories, this may start becoming more common (and it is perfectly acceptable to
 		//upgrade without any interaction with the parent... the child had the permissions!)
 		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))  
-			//MESI && !bcc->isValid(lineId)
+			//<MESI> && !bcc->isValid(lineId)
 			)){ //can only be a non-inclusive wback
-			assert(nonInclusiveHack);
+			////<MESI> assert(nonInclusiveHack);
 			assert((req.type == PUTS) || (req.type == PUTX));
 			respCycle = startCycle;//<MESI> bcc->processNonInclusiveWriteback(req.lineAddr, req.type, startCycle, req.state, req.srcId, req.flags);
 		}
