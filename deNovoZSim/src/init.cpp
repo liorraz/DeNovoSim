@@ -351,8 +351,8 @@ MemObject* BuildMemoryController(Config& config, uint32_t lineSize, uint32_t fre
     } else if (type == "WeaveSimple") {
         uint32_t boundLatency = config.get<uint32_t>("sys.mem.boundLatency", 100);
         mem = new WeaveSimpleMemory(latency, boundLatency, domain, name);
-    } else if (type == "DDR") {
-        mem = BuildDDRMemory(config, lineSize, frequency, domain, name, "sys.mem.");
+		//<MESI> } else if (type == "DDR") {
+		//<MESI>  mem = BuildDDRMemory(config, lineSize, frequency, domain, name, "sys.mem.");
     } else if (type == "DRAMSim") {
         uint64_t cpuFreqHz = 1000000 * frequency;
         uint32_t capacity = config.get<uint32_t>("sys.mem.capacityMB", 16384);
@@ -361,10 +361,10 @@ MemObject* BuildMemoryController(Config& config, uint32_t lineSize, uint32_t fre
         string outputDir = config.get<const char*>("sys.mem.outputDir");
         string traceName = config.get<const char*>("sys.mem.traceName");
         mem = new DRAMSimMemory(dramTechIni, dramSystemIni, outputDir, traceName, capacity, cpuFreqHz, latency, domain, name);
-    } else if (type == "Detailed") {
-        // FIXME(dsm): Don't use a separate config file... see DDRMemory
-        g_string mcfg = config.get<const char*>("sys.mem.paramFile", "");
-        mem = new MemControllerBase(mcfg, lineSize, frequency, domain, name);
+     //<MESI>} else if (type == "Detailed") {
+     //<MESI>    // FIXME(dsm): Don't use a separate config file... see DDRMemory
+     //<MESI>     g_string mcfg = config.get<const char*>("sys.mem.paramFile", "");
+     //<MESI>    mem = new MemControllerBase(mcfg, lineSize, frequency, domain, name);
     } else {
         panic("Invalid memory controller type %s", type.c_str());
     }
