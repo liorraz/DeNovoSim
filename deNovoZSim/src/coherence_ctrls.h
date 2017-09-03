@@ -257,7 +257,7 @@ public:
 	}
 
 	uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) {
-		bool lowerLevelWriteback = false;
+		//bool lowerLevelWriteback = false;
 		uint64_t endCycle = startCycle;//<MESI> bcc->processEviction(wbLineAddr, lineId, lowerLevelWriteback, startCycle, triggerReq.srcId); //2. if needed, write back line to upper level
 		return endCycle;  // critical path unaffected, but TimingCache needs it
 	}
