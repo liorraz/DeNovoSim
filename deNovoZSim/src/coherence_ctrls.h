@@ -62,6 +62,7 @@ public:
 	virtual bool isValid(uint32_t lineId) = 0;
 };
 
+
 class DeNovoImpl{
 
 private:
@@ -84,6 +85,8 @@ public:
 	}
 
 	void init(MemObject* _parent, Network* network, const char* name);
+
+	uint64_t processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
 
 	inline void lock() {
 		futex_lock(&ccLock);
@@ -122,6 +125,103 @@ public:
 		futex_unlock(&ccLock);
 	}
 
+};
+
+// Terminal CC, i.e., without children --- accepts GETS/X, but not PUTS/X
+// for simplicity we assume only 2 level of caches - so parent is always signel as
+class DeNovoTerminalCC : public CC {
+private:
+	DeNovoImpl* impl;
+	uint32_t numLines;
+	g_string name;
+
+public:
+	//Initialization
+	DeNovoTerminalCC(uint32_t _numLines, const g_string& _name) : //<MESI> bcc(nullptr), 
+		numLines(_numLines), name(_name) {}
+
+	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
+		info("Set parents called on DeNovoTerminalCC with name: %s", name.c_str());
+		if (parents.size() > 1){
+			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
+		}
+		impl = new DeNovoImpl(numLines, childId);
+		impl->init(parents[0], network, name.c_str());
+	}
+
+	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
+		panic("[%s] DeNovoTerminalCC::setChildren cannot be called -- terminal caches cannot have children!", name.c_str());
+	}
+
+	void initStats(AggregateStat* cacheStat) {
+		//<MESI> bcc->initStats(cacheStat);
+	}
+
+	//Access methods
+	bool startAccess(MemReq& req) {
+		assert((req.type == GETS) || (req.type == GETX)); //no puts!
+
+		/* Child should be locked when called. We do hand-over-hand locking when going
+		* down (which is why we require the lock), but not when going up, opening the
+		* child to invalidation races here to avoid deadlocks.
+		*/
+		if (req.childLock) {
+			futex_unlock(req.childLock);
+		}
+
+		impl->lock();
+
+		/* The situation is now stable, true race-wise. No one can touch the child state, because we hold
+		* both parent's locks. So, we first handle races, which may cause us to skip the access.
+		*/
+		bool skipAccess = false;//<MESI> CheckForMESIRace(req.type /*may change*/, req.state, req.initialState);
+		return skipAccess;
+	}
+
+	bool shouldAllocate(const MemReq& req) {
+		return true;
+	}
+
+	uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) {
+		//bool lowerLevelWriteback = false;
+		uint64_t endCycle = startCycle;//<MESI> bcc->processEviction(wbLineAddr, lineId, lowerLevelWriteback, startCycle, triggerReq.srcId); //2. if needed, write back line to upper level
+		return endCycle;  // critical path unaffected, but TimingCache needs it
+	}
+
+	uint64_t processAccess(const MemReq& req, int32_t lineId, uint64_t startCycle, uint64_t* getDoneCycle = nullptr) {
+		assert(lineId != -1);
+		assert(!getDoneCycle);
+		//if needed, fetch line or upgrade miss from upper level
+		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
+		//at this point, the line is in a good state w.r.t. upper levels
+		return respCycle;
+	}
+
+	void endAccess(const MemReq& req) {
+		//Relock child before we unlock ourselves (hand-over-hand)
+		if (req.childLock) {
+			futex_lock(req.childLock);
+		}
+		impl->unlock();
+	}
+
+	//Inv methods
+	void startInv() {
+		impl->lock();
+	}
+
+	uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) {
+		//<MESI> bcc->processInval(req.lineAddr, lineId, req.type, req.writeback); //adjust our own state
+		impl->unlock();
+		return startCycle; //no extra delay in terminal caches
+	}
+
+	//Repl policy interface
+	uint32_t numSharers(uint32_t lineId) { return 0; } //no sharers
+	bool isValid(uint32_t lineId) {
+		return false;
+		//<MESI> bcc->isValid(lineId); 
+	}
 };
 
 // DeNovo CC
@@ -273,102 +373,6 @@ public:
 	}
 };
 
-// Terminal CC, i.e., without children --- accepts GETS/X, but not PUTS/X
-// for simplicity we assume only 2 level of caches - so parent is always signel as
-class DeNovoTerminalCC : public CC {
-private:
-	DeNovoImpl* impl;
-	uint32_t numLines;
-	g_string name;
-
-public:
-	//Initialization
-	DeNovoTerminalCC(uint32_t _numLines, const g_string& _name) : //<MESI> bcc(nullptr), 
-		numLines(_numLines), name(_name) {}
-
-	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
-		info("Set parents called on DeNovoTerminalCC with name: %s", name.c_str());
-		if (parents.size() > 1){
-			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
-		}
-		impl = new DeNovoImpl(numLines, childId);
-		impl->init(parents[0], network, name.c_str());
-	}
-
-	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
-		panic("[%s] DeNovoTerminalCC::setChildren cannot be called -- terminal caches cannot have children!", name.c_str());
-	}
-
-	void initStats(AggregateStat* cacheStat) {
-		//<MESI> bcc->initStats(cacheStat);
-	}
-
-	//Access methods
-	bool startAccess(MemReq& req) {
-		assert((req.type == GETS) || (req.type == GETX)); //no puts!
-
-		/* Child should be locked when called. We do hand-over-hand locking when going
-		* down (which is why we require the lock), but not when going up, opening the
-		* child to invalidation races here to avoid deadlocks.
-		*/
-		if (req.childLock) {
-			futex_unlock(req.childLock);
-		}
-
-		impl->lock();
-
-		/* The situation is now stable, true race-wise. No one can touch the child state, because we hold
-		* both parent's locks. So, we first handle races, which may cause us to skip the access.
-		*/
-		bool skipAccess = false;//<MESI> CheckForMESIRace(req.type /*may change*/, req.state, req.initialState);
-		return skipAccess;
-	}
-
-	bool shouldAllocate(const MemReq& req) {
-		return true;
-	}
-
-	uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) {
-		//bool lowerLevelWriteback = false;
-		uint64_t endCycle = startCycle;//<MESI> bcc->processEviction(wbLineAddr, lineId, lowerLevelWriteback, startCycle, triggerReq.srcId); //2. if needed, write back line to upper level
-		return endCycle;  // critical path unaffected, but TimingCache needs it
-	}
-
-	uint64_t processAccess(const MemReq& req, int32_t lineId, uint64_t startCycle, uint64_t* getDoneCycle = nullptr) {
-		assert(lineId != -1);
-		assert(!getDoneCycle);
-		//if needed, fetch line or upgrade miss from upper level
-		uint64_t respCycle = startCycle;//<MESI> bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, req.flags);
-		//at this point, the line is in a good state w.r.t. upper levels
-		return respCycle;
-	}
-
-	void endAccess(const MemReq& req) {
-		//Relock child before we unlock ourselves (hand-over-hand)
-		if (req.childLock) {
-			futex_lock(req.childLock);
-		}
-		impl->unlock();
-	}
-
-	//Inv methods
-	void startInv() {
-		impl->lock();
-	}
-
-	uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) {
-		//<MESI> bcc->processInval(req.lineAddr, lineId, req.type, req.writeback); //adjust our own state
-		impl->unlock();
-		return startCycle; //no extra delay in terminal caches
-	}
-
-	//Repl policy interface
-	uint32_t numSharers(uint32_t lineId) { return 0; } //no sharers
-	bool isValid(uint32_t lineId) {
-		return false;
-		//<MESI> bcc->isValid(lineId); 
-	}
-};
 
 
 
