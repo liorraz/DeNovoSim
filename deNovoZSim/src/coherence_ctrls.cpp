@@ -36,6 +36,17 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 
 
+void DeNovoLLCImpl::init(const g_vector<BaseCache*>& _children, Network* network, const char* name) {
+    if (_children.size() > MAX_CACHE_CHILDREN) {
+        panic("[%s] Children size (%d) > MAX_CACHE_CHILDREN (%d)", name, (uint32_t)_children.size(), MAX_CACHE_CHILDREN);
+    }
+
+    children.resize(_children.size());
+    for (uint32_t c = 0; c < children.size(); c++) {
+		info("init child with name %s and type %s", _children[c]->getName(), typeid((*_children[c])).name());
+		children[c] = _children[c];
+    }
+}
 
 
 
