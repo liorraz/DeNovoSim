@@ -40,51 +40,58 @@
 
 /* Generic, integrated controller interface */
 class CC : public GlobAlloc {
-    public:
-        //Initialization
-        virtual void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) = 0;
-        virtual void setChildren(const g_vector<BaseCache*>& children, Network* network) = 0;
-        virtual void initStats(AggregateStat* cacheStat) = 0;
+public:
+	//Initialization
+	virtual void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) = 0;
+	virtual void setChildren(const g_vector<BaseCache*>& children, Network* network) = 0;
+	virtual void initStats(AggregateStat* cacheStat) = 0;
 
-        //Access methods; see Cache for call sequence
-        virtual bool startAccess(MemReq& req) = 0; //initial locking, address races; returns true if access should be skipped; may change req!
-        virtual bool shouldAllocate(const MemReq& req) = 0; //called when we don't find req's lineAddr in the array
-        virtual uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) = 0; //called iff shouldAllocate returns true
-        virtual uint64_t processAccess(const MemReq& req, int32_t lineId, uint64_t startCycle, uint64_t* getDoneCycle = nullptr) = 0;
-        virtual void endAccess(const MemReq& req) = 0;
+	//Access methods; see Cache for call sequence
+	virtual bool startAccess(MemReq& req) = 0; //initial locking, address races; returns true if access should be skipped; may change req!
+	virtual bool shouldAllocate(const MemReq& req) = 0; //called when we don't find req's lineAddr in the array
+	virtual uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) = 0; //called iff shouldAllocate returns true
+	virtual uint64_t processAccess(const MemReq& req, int32_t lineId, uint64_t startCycle, uint64_t* getDoneCycle = nullptr) = 0;
+	virtual void endAccess(const MemReq& req) = 0;
 
-        //Inv methods
-        virtual void startInv() = 0;
-        virtual uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) = 0;
+	//Inv methods
+	virtual void startInv() = 0;
+	virtual uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) = 0;
 
-        //Repl policy interface
-        virtual uint32_t numSharers(uint32_t lineId) = 0;
-        virtual bool isValid(uint32_t lineId) = 0;
+	//Repl policy interface
+	virtual uint32_t numSharers(uint32_t lineId) = 0;
+	virtual bool isValid(uint32_t lineId) = 0;
 };
 
 class DeNovoImpl{
-	
-	    private:
-	        DeNovoState* deNovoStatesArray;
-	        MemObject* parent;
-			uint32_t numLines; 
-			uint32_t selfId;
 
-			PAD();
-	        lock_t ccLock;
-	        PAD();
-	
-	    public:
-			DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : numLines(_numLines), selfId(_selfId) {
-				deNovoStatesArray = gm_calloc<DeNovoState>(numLines);
-	            for (uint32_t i = 0; i < numLines; i++) {
-					deNovoStatesArray[i] = Invalid;
-	            }
-	            futex_init(&ccLock);
-	        }
-	
-			void init(MemObject* _parent, Network* network, const char* name);
-	
+private:
+	DeNovoState* deNovoStatesArray;
+	MemObject* parent;
+	uint32_t numLines;
+	uint32_t selfId;
+
+	PAD();
+	lock_t ccLock;
+	PAD();
+
+public:
+	DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : numLines(_numLines), selfId(_selfId) {
+		deNovoStatesArray = gm_calloc<DeNovoState>(numLines);
+		for (uint32_t i = 0; i < numLines; i++) {
+			deNovoStatesArray[i] = Invalid;
+		}
+		futex_init(&ccLock);
+	}
+
+	void init(MemObject* _parent, Network* network, const char* name);
+
+	inline void lock() {
+		futex_lock(&ccLock);
+	}
+
+	inline void unlock() {
+		futex_unlock(&ccLock);
+	}
 
 
 };
@@ -104,11 +111,11 @@ public:
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
-		info("Set parents called on DeNovoCC with name: %s" , name.c_str());
+		info("Set parents called on DeNovoCC with name: %s", name.c_str());
 		if (parents.size() > 1){
 			panic("[%s] DeNovoCC parents size (%u) > 1", name.c_str(), (uint32_t)parents.size());
 		}
-		
+
 		impl = new DeNovoImpl(numLines, childId);
 		impl->init(parents[0], network, name.c_str());
 	}
@@ -137,7 +144,7 @@ public:
 		}
 
 		//<MESI> tcc->lock(); //must lock tcc FIRST
-		//<MESI> bcc->lock();
+		impl->lock();
 
 		/* The situation is now stable, true race-wise. No one can touch the child state, because we hold
 		* both parent's locks. So, we first handle races, which may cause us to skip the access.
@@ -174,7 +181,7 @@ public:
 		//invalidations. The alternative with this would be to capture these blocks, since we have space anyway. This is so rare is doesn't matter,
 		//but if we do proper NI/EX mid-level caches backed by directories, this may start becoming more common (and it is perfectly acceptable to
 		//upgrade without any interaction with the parent... the child had the permissions!)
-		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))  
+		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))
 			//<MESI> && !bcc->isValid(lineId)
 			)){ //can only be a non-inclusive wback
 			////<MESI> assert(nonInclusiveHack);
@@ -211,28 +218,28 @@ public:
 			futex_lock(req.childLock);
 		}
 
-		//<MESI> bcc->unlock();
+		impl->unlock();
 		//<MESI> tcc->unlock();
 	}
 
 	//Inv methods
 	void startInv() {
-		//<MESI> bcc->lock(); //note we don't grab tcc; tcc serializes multiple up accesses, down accesses don't see it
+		impl->lock(); //note we don't grab tcc; tcc serializes multiple up accesses, down accesses don't see it
 	}
 
 	uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) {
 		uint64_t respCycle = startCycle;//<MESI> tcc->processInval(req.lineAddr, lineId, req.type, req.writeback, startCycle, req.srcId); //send invalidates or downgrades to children
 		//<MESI> bcc->processInval(req.lineAddr, lineId, req.type, req.writeback); //adjust our own state
 
-		//<MESI> bcc->unlock();
+		impl->unlock();
 		return respCycle;
 	}
 
 	//Repl policy interface
-	uint32_t numSharers(uint32_t lineId) { 
+	uint32_t numSharers(uint32_t lineId) {
 		return 0;// <MESI> tcc->numSharers(lineId);
 	}
-	bool isValid(uint32_t lineId) { 
+	bool isValid(uint32_t lineId) {
 		return false;//<MESI> bcc->isValid(lineId); 
 	}
 };
@@ -279,7 +286,7 @@ public:
 			futex_unlock(req.childLock);
 		}
 
-		//<MESI> bcc->lock();
+		impl->lock();
 
 		/* The situation is now stable, true race-wise. No one can touch the child state, because we hold
 		* both parent's locks. So, we first handle races, which may cause us to skip the access.
@@ -312,23 +319,23 @@ public:
 		if (req.childLock) {
 			futex_lock(req.childLock);
 		}
-		//<MESI> bcc->unlock();
+		impl->unlock();
 	}
 
 	//Inv methods
 	void startInv() {
-		//<MESI> bcc->lock();
+		impl->lock();
 	}
 
 	uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) {
 		//<MESI> bcc->processInval(req.lineAddr, lineId, req.type, req.writeback); //adjust our own state
-		//<MESI> bcc->unlock();
+		impl->unlock();
 		return startCycle; //no extra delay in terminal caches
 	}
 
 	//Repl policy interface
 	uint32_t numSharers(uint32_t lineId) { return 0; } //no sharers
-	bool isValid(uint32_t lineId) { 
+	bool isValid(uint32_t lineId) {
 		return false;
 		//<MESI> bcc->isValid(lineId); 
 	}
