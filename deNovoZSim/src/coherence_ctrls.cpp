@@ -40,9 +40,12 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
     uint64_t respCycle = cycle;
-	//DeNovoState* state = &deNovoStatesArray[lineId];
-    info("test test"); 
-	
+
+	if (lineId > numLines) {
+		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
+	}
+	DeNovoState* state = &deNovoStatesArray[lineId];
+    	
 	switch (type) {
         // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
         case PUTS: //Clean writeback, nothing to do (except profiling)
