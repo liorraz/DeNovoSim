@@ -137,7 +137,7 @@ uint64_t StreamPrefetcher::access(MemReq& req) {
                 DBG("%s: pos %d stride %d conf %d lastPrefetchPos %d prefetchPos %d fetchDepth %d", name.c_str(), pos, stride, e.conf.counter(), e.lastPrefetchPos, prefetchPos, fetchDepth);
 
                 if (prefetchPos < 64 && !e.valid[prefetchPos]) {
-                    MESIState state = I;
+                    DeNovoState state = Invalid;
                     MemReq pfReq = {req.lineAddr + prefetchPos - pos, GETS, req.childId, &state, reqCycle, req.childLock, state, req.srcId, MemReq::PREFETCH};
                     uint64_t pfRespCycle = parent->access(pfReq);  // FIXME, might segfault
                     e.valid[prefetchPos] = true;
