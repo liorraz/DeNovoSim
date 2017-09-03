@@ -88,7 +88,7 @@ public:
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
-		info("Set childern called on DeNovoCC with nanme: %s and %u children", name.c_str(), (uint32_t)parents.size());
+		info("Set childern called on DeNovoCC with nanme: %s and %u children", name.c_str(), (uint32_t)children.size());
 		//<MESI> tcc = new MESITopCC(numLines, nonInclusiveHack);
 		//<MESI> tcc->init(children, network, name.c_str());
 	}
