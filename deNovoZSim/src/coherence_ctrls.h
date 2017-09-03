@@ -251,7 +251,7 @@ public:
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
-		info("Set parents called on DeNovoTerminalCC with nanme: %s", name.c_str());
+		info("Set parents called on DeNovoTerminalCC with name: %s", name.c_str());
 		if (parents.size() > 1){
 			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
 		}

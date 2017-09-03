@@ -30,7 +30,7 @@
 
 
 void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
-	info("init parent with name %s and type %s", _parent->getName(), typeid(_parent).name());
+	info("init parent with name %s and type %s", _parent->getName(), typeid(*_parent).name());
 	parent = _parent;
 }
 
