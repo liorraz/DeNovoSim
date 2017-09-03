@@ -1,0 +1,90 @@
+[H] Starting zsim, built Sun Aug 13 22:17:54 IDT 2017 (rev master:89:fb4d6e0:2fc 2+ 1- fe32dd6d)
+[H] Creating global segment, 1024 MBs
+[H] Global segment shmid = 622594
+[H] Deadlock detection ON
+[S 1] Started instance
+[S 0] Started instance
+[S 0] Started RR scheduler, quantum=50 phases
+[S 0] Lior Raz Initialized system
+[S 0] HDF5 backend: Opening /specific/a/home/cc/students/cs/liorraz/zsim/zsim.h5
+[S 0] HDF5 backend: Created table, 22624 bytes/record, 47 records/write
+[S 0] HDF5 backend: Opening /specific/a/home/cc/students/cs/liorraz/zsim/zsim-ev.h5
+[S 0] HDF5 backend: Created table, 22624 bytes/record, 6 records/write
+[S 0] HDF5 backend: Opening /specific/a/home/cc/students/cs/liorraz/zsim/zsim-cmp.h5
+[S 0] HDF5 backend: Created table, 2464 bytes/record, 1 records/write
+[S 0] Initialization complete
+[S 0] Started process, PID 41119
+[S 0] procMask: 0x0
+[S 0] [0] Adjusting clocks, domain 0, de-ffwd 0
+[H] Attached to global heap
+[S 1] Started process, PID 41120
+[S 1] procMask: 0x400000000000000
+[S 0] vDSO info initialized
+[S 1] vDSO info initialized
+[S 0] Thread 0 starting
+[S 0] Started contention simulation thread 0
+[S 0] Started scheduler watchdog thread
+[S 0] FF control Thread TID 41127
+[S 1] Thread 0 starting
+[S 1] FF control Thread TID 41128
+[S 0] Time slice ended, context-switched 1 threads, runQueue size 0, available 0
+[S 0]  State:   0r
+[S 1] Time slice ended, context-switched 1 threads, runQueue size 0, available 0
+[S 1]  State:  65536r
+[S 0] Time slice ended, context-switched 1 threads, runQueue size 0, available 0
+[S 0]  State:   0r
+// As simple as it gets: 1-core system with 2 short processes
+
+sys = {
+    cores = {
+        simpleCore = {
+            type = "Simple";
+            dcache = "l1d";
+            icache = "l1i";
+        };
+    };
+
+    lineSize = 64;
+
+    caches = {
+        l1d = {
+            size = 65536;
+        };
+        l1i = {
+            size = 32768;
+        };
+        l2 = {
+            caches = 1;
+            size = 2097152;
+            children = "l1i|l1d";  // interleave
+        };
+    };
+};
+
+sim = {
+    phaseLength = 10000;
+    // attachDebugger = True;
+    schedQuantum = 50;  // switch threads frequently
+    procStatsFilter = "l1.*|l2.*";
+};
+
+process0 = {
+    command = "ls -alh --color tests/";
+};
+
+
+process1 = {
+    command = "cat tests/simple.cfg";
+};
+
+total 28K
+drwxr-xr-x 2 liorraz math1 4.0K Aug 13 20:50 [0m[01;34m.[0m
+drwxr-xr-x 7 liorraz math1 4.0K Aug 13 22:17 [01;34m..[0m
+-rwxr-xr-x 1 liorraz math1 2.4K Aug 13 20:50 [01;32mhet.cfg[0m
+-rwxr-xr-x 1 liorraz math1 1.2K Aug 13 20:50 [01;32mhooks.cfg[0m
+-rw-r--r-- 1 liorraz math1 1.2K Aug 13 20:50 pgo.cfg
+-rwxr-xr-x 1 liorraz math1 1.5K Aug 13 20:50 [01;32mptree.cfg[0m
+-rwxr-xr-x 1 liorraz math1  759 Aug 13 20:50 [01;32msimple.cfg[0m
+[H] Child 41120 done
+[H] Child 41119 done
+[H] All children done, exiting
