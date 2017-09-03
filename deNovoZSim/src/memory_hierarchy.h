@@ -63,7 +63,6 @@ typedef enum {
     Invalid,    // no data available
 	Valid,      // the most up-to-date data is in the LLC
     Registerd,  // the most up-to-date data is in the core’s cache, while the LLC points to that core
-	Dummy, // tmp
 } DeNovoState;
 
 //Convenience methods for clearer debug traces
