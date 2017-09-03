@@ -111,7 +111,7 @@ public:
 			panic("[%s] DeNovoCC parents size (%u) > 1", name.c_str(), (uint32_t)parents.size());
 		}
 		
-		impl = new DeNovoImpl(numLines);
+		impl = new DeNovoImpl(numLines, childId);
 		impl->init(parents[0], network, name.c_str());
 	}
 
