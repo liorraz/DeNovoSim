@@ -99,7 +99,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, AccessType
             //assert_msg(*state == M, "Wrong final state on GETX, lineId %d numLines %d, finalState %s", lineId, numLines, MESIStateName(*state));
             break;
 
-        default: panic("!?");
+        //default: panic("!?");
     }
     assert_msg(respCycle >= cycle, "XXX %ld %ld", respCycle, cycle);
     return respCycle;
