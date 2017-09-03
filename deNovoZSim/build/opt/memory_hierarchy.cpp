@@ -27,7 +27,7 @@
 
 static const char* accessTypeNames[] = {"GETS", "GETX", "PUTS", "PUTX"};
 static const char* invTypeNames[] = {"INV", "INVX"};
-static const char* mesiStateNames[] = {"I", "S", "E", "M"};
+static const char* deNovoStateNames[] = { "Invalid", "Valid", "Registered" };
 
 const char* AccessTypeName(AccessType t) {
     assert_msg(t >= 0 && (size_t)t < sizeof(accessTypeNames)/sizeof(const char*), "AccessTypeName got an out-of-range input, %d", t);
@@ -39,9 +39,9 @@ const char* InvTypeName(InvType t) {
     return invTypeNames[t];
 }
 
-const char* MESIStateName(MESIState s) {
-    assert_msg(s >= 0 && (size_t)s < sizeof(mesiStateNames)/sizeof(const char*), "MESIStateName got an out-of-range input, %d", s);
-    return mesiStateNames[s];
+const char* DeNovoStateName(DeNovoState s) {
+	assert_msg(s >= 0 && (size_t)s < sizeof(deNovoStateNames) / sizeof(const char*), "DeNovoStateName got an out-of-range input, %d", s);
+	return deNovoStateNames[s];
 }
 
 #include <type_traits>

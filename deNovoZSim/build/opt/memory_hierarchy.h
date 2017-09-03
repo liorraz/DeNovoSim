@@ -48,6 +48,7 @@ typedef enum {
     PUTX  // dirty writeback (lower cache is evicting this line, line was modified)
 } AccessType;
 
+// Lior TODO: currently not sure what to do with InvType ...
 /* Types of Invalidation. An Invalidation is a request issued from upper to lower
  * levels of the hierarchy.
  */
@@ -59,16 +60,15 @@ typedef enum {
 
 /* Coherence states for the MESI protocol */
 typedef enum {
-    I, // invalid
-    S, // shared (and clean)
-    E, // exclusive and clean
-    M  // exclusive and dirty
-} MESIState;
+    Invalid, 
+    Valid,
+    Registerd, 
+} DeNovoState;
 
 //Convenience methods for clearer debug traces
 const char* AccessTypeName(AccessType t);
 const char* InvTypeName(InvType t);
-const char* MESIStateName(MESIState s);
+const char* DeNovoStateName(DeNovoState s);
 
 inline bool IsGet(AccessType t) { return t == GETS || t == GETX; }
 inline bool IsPut(AccessType t) { return t == PUTS || t == PUTX; }
@@ -79,12 +79,12 @@ struct MemReq {
     Address lineAddr;
     AccessType type;
     uint32_t childId;
-    MESIState* state;
+	DeNovoState* state;
     uint64_t cycle; //cycle where request arrives at component
 
     //Used for race detection/sync
     lock_t* childLock;
-    MESIState initialState;
+	DeNovoState initialState;
 
     //Requester id --- used for contention simulation
     uint32_t srcId;

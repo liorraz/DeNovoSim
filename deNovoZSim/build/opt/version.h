@@ -1,2 +1,2 @@
-#define ZSIM_BUILDDATE "Sun Sep  3 17:11:06 IDT 2017"
-#define ZSIM_BUILDVERSION "master:89:fb4d6e0:3fc 15+ 5- 50c3b2af"
+#define ZSIM_BUILDDATE "Sun Sep  3 22:44:51 IDT 2017"
+#define ZSIM_BUILDVERSION "no git repo"

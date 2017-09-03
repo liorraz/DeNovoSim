@@ -76,13 +76,13 @@ void TraceDriver::setParent(MemObject* _parent) {
 
 uint64_t TraceDriver::invalidate(uint32_t childId, Address lineAddr, InvType type, bool* reqWriteback, uint64_t reqCycle, uint32_t srcId) {
     assert(childId < numChildren);
-    std::unordered_map<Address, MESIState>& cStore = children[childId].cStore;
-    std::unordered_map<Address, MESIState>::iterator it = cStore.find(lineAddr);
+    std::unordered_map<Address, DeNovoState>& cStore = children[childId].cStore;
+	std::unordered_map<Address, DeNovoState>::iterator it = cStore.find(lineAddr);
     assert((it != cStore.end()));
-    *reqWriteback = (it->second == M);
+	//<MESI>*reqWriteback = (it->second == M);
     if (type == INVX) {
-        it->second = S;
-        children[childId].profInvx.inc();
+		//<MESI>it->second = S;
+		//<MESI>children[childId].profInvx.inc();
     } else {
         cStore.erase(it);
         if (srcId == childId) {
@@ -123,7 +123,7 @@ bool TraceDriver::executePhase() {
 
 void TraceDriver::executeAccess(AccessRecord acc) {
     assert(acc.childId < numChildren);
-    std::unordered_map<Address, MESIState>& cStore = children[acc.childId].cStore;
+	std::unordered_map<Address, DeNovoState>& cStore = children[acc.childId].cStore;
 
     int64_t lat = 0;
     switch (acc.type) {
@@ -131,39 +131,39 @@ void TraceDriver::executeAccess(AccessRecord acc) {
         case PUTX:
             {
                 if (!playPuts) return;
-                std::unordered_map<Address, MESIState>::iterator it = cStore.find(acc.lineAddr);
+				std::unordered_map<Address, DeNovoState>::iterator it = cStore.find(acc.lineAddr);
                 if (it == cStore.end()) return; //we don't currently have this line, skip
                 MemReq req = {acc.lineAddr, acc.type, acc.childId, &it->second, acc.reqCycle, nullptr, it->second, acc.childId};
                 lat = parent->access(req) - acc.reqCycle; //note that PUT latency does not affect driver latency
-                assert(it->second == I);
+                assert(it->second == Invalid);
                 cStore.erase(it);
             }
             break;
         case GETS:
         case GETX:
             {
-                std::unordered_map<Address, MESIState>::iterator it = cStore.find(acc.lineAddr);
-                MESIState state = I;
-                if (it != cStore.end()) {
-                    if (!((it->second == S) && (acc.type == GETX))) { //we have the line, and it's not an upgrade miss, we can't replay this access directly
-                        if (playAllGets) { //issue a PUT
-                            MemReq req = {acc.lineAddr, (it->second == M)? PUTX : PUTS, acc.childId, &it->second, acc.reqCycle, nullptr, it->second, acc.childId};
-                            parent->access(req);
-                            assert(it->second == I);
-                        } else {
-                            return; //skip
-                        }
-                    } else {
-                        state = it->second;
-                    }
-                }
-                MemReq req = {acc.lineAddr, acc.type, acc.childId, &state, acc.reqCycle, nullptr, state, acc.childId};
-                uint64_t respCycle = parent->access(req);
-                lat = respCycle - acc.reqCycle;
-                children[acc.childId].profLat.inc(lat);
-                children[acc.childId].skew += ((int64_t)lat - acc.latency);
-                assert(state != I);
-                cStore[acc.lineAddr] = state;
+				//<MESI> std::unordered_map<Address, DeNovoState>::iterator it = cStore.find(acc.lineAddr);
+				//<MESI> DeNovoState state = Invalid;
+				//<MESI>  if (it != cStore.end()) {
+				//<MESI>     if (!((it->second == S) && (acc.type == GETX))) { //we have the line, and it's not an upgrade miss, we can't replay this access directly
+				//<MESI>         if (playAllGets) { //issue a PUT
+				//<MESI>             MemReq req = {acc.lineAddr, (it->second == M)? PUTX : PUTS, acc.childId, &it->second, acc.reqCycle, nullptr, it->second, acc.childId};
+				//<MESI>             parent->access(req);
+				//<MESI>              assert(it->second == I);
+				//<MESI>        } else {
+				//<MESI>             return; //skip
+				//<MESI>         }
+				//<MESI>     } else {
+				//<MESI>          state = it->second;
+				//<MESI>      }
+				//<MESI> }
+				//<MESI> MemReq req = {acc.lineAddr, acc.type, acc.childId, &state, acc.reqCycle, nullptr, state, acc.childId};
+				//<MESI>  uint64_t respCycle = parent->access(req);
+				//<MESI> lat = respCycle - acc.reqCycle;
+				//<MESI> [acc.childId].profLat.inc(lat);
+				//<MESI> children[acc.childId].skew += ((int64_t)lat - acc.latency);
+				//<MESI> assert(state != Invalid);
+				//<MESI>  cStore[acc.lineAddr] = state;
             }
             break;
         default:

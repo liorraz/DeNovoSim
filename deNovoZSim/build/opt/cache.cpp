@@ -121,7 +121,7 @@ uint64_t Cache::access(MemReq& req) {
     cc->endAccess(req);
 
     assert_msg(respCycle >= req.cycle, "[%s] resp < req? 0x%lx type %s childState %s, respCycle %ld reqCycle %ld",
-            name.c_str(), req.lineAddr, AccessTypeName(req.type), MESIStateName(*req.state), respCycle, req.cycle);
+		name.c_str(), req.lineAddr, AccessTypeName(req.type), DeNovoStateName(*req.state), respCycle, req.cycle);
     return respCycle;
 }
 

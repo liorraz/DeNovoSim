@@ -39,7 +39,7 @@ class TraceDriverProxyCache;
 class TraceDriver {
     private:
         struct ChildInfo {
-            std::unordered_map<Address, MESIState> cStore; //holds current sets of lines for each child. Needs to support an arbitrary set, hence the hash table
+			std::unordered_map<Address, DeNovoState> cStore; //holds current sets of lines for each child. Needs to support an arbitrary set, hence the hash table
             int64_t skew;
             uint64_t lastReqCycle;
             //Counter bypassedGETS;

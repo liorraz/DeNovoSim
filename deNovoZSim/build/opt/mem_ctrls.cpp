@@ -32,13 +32,13 @@ uint64_t SimpleMemory::access(MemReq& req) {
     switch (req.type) {
         case PUTS:
         case PUTX:
-            *req.state = I;
+			//<MESI>*req.state = I;
             break;
         case GETS:
-            *req.state = req.is(MemReq::NOEXCL)? S : E;
+			//<MESI>*req.state = req.is(MemReq::NOEXCL)? S : E;
             break;
         case GETX:
-            *req.state = M;
+			//<MESI>*req.state = M;
             break;
 
         default: panic("!?");
@@ -125,19 +125,19 @@ uint64_t MD1Memory::access(MemReq& req) {
             //Note no break
         case PUTS:
             //Not a real access -- memory must treat clean wbacks as if they never happened.
-            *req.state = I;
+            *req.state = Invalid;
             break;
         case GETS:
             profReads.atomicInc();
             profTotalRdLat.atomicInc(curLatency);
             __sync_fetch_and_add(&curPhaseAccesses, 1);
-            *req.state = req.is(MemReq::NOEXCL)? S : E;
+			//<MESI> *req.state = req.is(MemReq::NOEXCL)? S : E;
             break;
         case GETX:
             profReads.atomicInc();
             profTotalRdLat.atomicInc(curLatency);
             __sync_fetch_and_add(&curPhaseAccesses, 1);
-            *req.state = M;
+            //<MESI> *req.state = M;
             break;
 
         default: panic("!?");
