@@ -268,7 +268,7 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
         cc = new DeNovoTerminalCC(numLines, name);
     } else {
 	info("De Non Non-Terminal for name %s",name.c_str());
-		cc = new DeNovoCC(numLines, nonInclusiveHack, name);
+		cc = new DeNovoCC(numLines, name);
     }
     rp->setCC(cc);
     if (!isTerminal) {
