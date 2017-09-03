@@ -81,13 +81,14 @@ public:
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
 		info("Set parents called on DeNovoCC with nanme: %s" , name.c_str());
 		if (parents.size() > 1){
-			panic("[%s] DeNovoCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
+			panic("[%s] DeNovoCC parents size (%u) > 1", name.c_str(), (uint32_t)parents.size());
 		}
 		//<MESI> bcc = new MESIBottomCC(numLines, childId, nonInclusiveHack);
 		//<MESI> bcc->init(parents, network, name.c_str());
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
+		info("Set childern called on DeNovoCC with nanme: %s and %u children", name.c_str(), (uint32_t)parents.size());
 		//<MESI> tcc = new MESITopCC(numLines, nonInclusiveHack);
 		//<MESI> tcc->init(children, network, name.c_str());
 	}
