@@ -143,5 +143,5 @@ void MD1Memory::updateLatency() {
 //        default: panic("!?");
 //    }
 //    return req.cycle + ((req.type == PUTS)? 0 /*PUTS is not a real access*/ : curLatency);
-}
+//}
 
