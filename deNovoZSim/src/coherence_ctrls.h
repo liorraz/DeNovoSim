@@ -78,6 +78,7 @@ private:
 public:
 	DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : numLines(_numLines), selfId(_selfId) {
 		deNovoStatesArray = gm_calloc<DeNovoState>(numLines);
+		info("number of lines in DeNovoImpl is: %u", numLines);
 		for (uint32_t i = 0; i < numLines; i++) {
 			deNovoStatesArray[i] = Invalid;
 		}
