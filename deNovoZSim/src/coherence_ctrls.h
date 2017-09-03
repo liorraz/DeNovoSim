@@ -62,14 +62,41 @@ class CC : public GlobAlloc {
         virtual bool isValid(uint32_t lineId) = 0;
 };
 
+class DeNovoImpl{
+	
+	    private:
+	        DeNovoState* deNovoStatesArray;
+	        MemObject* parent;
+			uint32_t numLines; 
+			uint32_t selfId;
+
+			PAD();
+	        lock_t ccLock;
+	        PAD();
+	
+	    public:
+			DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : numLines(_numLines), selfId(_selfId) {
+				deNovoStatesArray = gm_calloc<DeNovoState>(numLines);
+	            for (uint32_t i = 0; i < numLines; i++) {
+					deNovoStatesArray[i] = Invalid;
+	            }
+	            futex_init(&ccLock);
+	        }
+	
+			void init(MemObject* _parent, Network* network, const char* name){
+				parent = _parent;
+			}
+	
+
+
+};
 
 // DeNovo CC
 // Non-terminal CC; accepts GETS/X and PUTS/X accesses
 // Lior: this is the LLC
 class DeNovoCC : public CC {
 private:
-	//<MESI> MESITopCC* tcc;
-	//<MESI> MESIBottomCC* bcc;
+	DeNovoImpl* impl;
 	uint32_t numLines;
 	g_string name;
 
@@ -79,16 +106,17 @@ public:
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
-		info("Set parents called on DeNovoCC with nanme: %s" , name.c_str());
+		info("Set parents called on DeNovoCC with name: %s" , name.c_str());
 		if (parents.size() > 1){
 			panic("[%s] DeNovoCC parents size (%u) > 1", name.c_str(), (uint32_t)parents.size());
 		}
-		//<MESI> bcc = new MESIBottomCC(numLines, childId, nonInclusiveHack);
-		//<MESI> bcc->init(parents, network, name.c_str());
+		
+		impl = new DeNovoImpl(numLines);
+		impl->init(parents[0], network, name.c_str());
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
-		info("Set childern called on DeNovoCC with nanme: %s and %u children", name.c_str(), (uint32_t)children.size());
+		info("Set childern called on DeNovoCC with name: %s and %u children", name.c_str(), (uint32_t)children.size());
 		//<MESI> tcc = new MESITopCC(numLines, nonInclusiveHack);
 		//<MESI> tcc->init(children, network, name.c_str());
 	}

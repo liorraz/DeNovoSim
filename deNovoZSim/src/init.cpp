@@ -264,10 +264,10 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
     Cache* cache;
     CC* cc;
     if (isTerminal) {
-	info("De Novo TERMINAL for name %s", name.c_str());
+	info("DeNovo TERMINAL for name %s", name.c_str());
         cc = new DeNovoTerminalCC(numLines, name);
     } else {
-	info("De Non Non-Terminal for name %s",name.c_str());
+	info("DeNon Non-Terminal for name %s",name.c_str());
 		cc = new DeNovoCC(numLines, name);
     }
     rp->setCC(cc);
@@ -779,7 +779,7 @@ static void InitSystem(Config& config) {
     for (pair<string, CacheGroup*> kv : cMap) delete kv.second;
     cMap.clear();
 
-    info("Lior Raz Initialized system with De Novo");
+    info("Initialized system with DeNovo");
 }
 
 static void PreInitStats() {
