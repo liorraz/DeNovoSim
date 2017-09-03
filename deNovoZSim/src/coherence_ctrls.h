@@ -34,6 +34,7 @@
 #include "memory_hierarchy.h"
 #include "pad.h"
 #include "stats.h"
+#include "log.h"
 
 //TODO: Now that we have a pure CC interface, the MESI controllers should go on different files.
 
@@ -78,6 +79,10 @@ public:
 		numLines(_numLines), name(_name) {}
 
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
+		info("Set parents called on DeNovoCC with nanme: %s" + name.c_str());
+		if (parents.size() > 1){
+			panic("[%s] DeNovoCC parents size (%d) > 1", name, (uint32_t)_children.size());
+		}
 		//<MESI> bcc = new MESIBottomCC(numLines, childId, nonInclusiveHack);
 		//<MESI> bcc->init(parents, network, name.c_str());
 	}
@@ -221,6 +226,10 @@ public:
 	void setParents(uint32_t childId, const g_vector<MemObject*>& parents, Network* network) {
 		//<MESI> bcc = new MESIBottomCC(numLines, childId, false /*inclusive*/);
 		//<MESI> bcc->init(parents, network, name.c_str());
+		info("Set parents called on DeNovoTerminalCC with nanme: %s" + name.c_str());
+		if (parents.size() > 1){
+			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name, (uint32_t)_children.size());
+		}
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
