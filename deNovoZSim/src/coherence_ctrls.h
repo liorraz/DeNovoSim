@@ -68,6 +68,7 @@ class DeNovoImpl{
 private:
 	DeNovoState* deNovoStatesArray;
 	MemObject* parent;
+	uint32_t parentRTT;
 	uint32_t selfId;
 
 	PAD();
@@ -106,6 +107,7 @@ private:
 	uint32_t numLines;
 
 
+
 	PAD();
 	lock_t ccLock;
 	PAD();
@@ -116,6 +118,8 @@ public:
 	}
 
 	void init(const g_vector<BaseCache*>& _children, Network* network, const char* name);
+
+	uint64_t processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId);
 
 	inline void lock() {
 		futex_lock(&ccLock);
@@ -192,7 +196,7 @@ public:
 		assert(lineId != -1);
 		assert(!getDoneCycle);
 		//if needed, fetch line or upgrade miss from upper level
-		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId,numLines, req.type, startCycle, req.srcId, req.flags);
+		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId, numLines, req.type, startCycle, req.srcId, req.flags);
 		//at this point, the line is in a good state w.r.t. upper levels
 		return respCycle;
 	}
@@ -305,39 +309,43 @@ public:
 
 	uint64_t processAccess(const MemReq& req, int32_t lineId, uint64_t startCycle, uint64_t* getDoneCycle = nullptr) {
 		uint64_t respCycle = startCycle;
+		llcImpl->processAccess(req.lineAddr, lineId, numLines, req.type, startCycle, req.srcId);
+
+
 		//Handle non-inclusive writebacks by bypassing
 		//NOTE: Most of the time, these are due to evictions, so the line is not there. But the second condition can trigger in NUCA-initiated
 		//invalidations. The alternative with this would be to capture these blocks, since we have space anyway. This is so rare is doesn't matter,
 		//but if we do proper NI/EX mid-level caches backed by directories, this may start becoming more common (and it is perfectly acceptable to
 		//upgrade without any interaction with the parent... the child had the permissions!)
-		if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))
-			//<MESI> && !bcc->isValid(lineId)
-			)){ //can only be a non-inclusive wback
-			////<MESI> assert(nonInclusiveHack);
-			assert((req.type == PUTS) || (req.type == PUTX));
-			respCycle = startCycle;//<MESI> bcc->processNonInclusiveWriteback(req.lineAddr, req.type, startCycle, req.state, req.srcId, req.flags);
-		}
-		else {
-			//Prefetches are side requests and get handled a bit differently
-			bool isPrefetch = req.flags & MemReq::PREFETCH;
-			assert(!isPrefetch || req.type == GETS);
-			//<MESI>uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
+		//if (lineId == -1 || (((req.type == PUTS) || (req.type == PUTX))
+		//	//<MESI> && !bcc->isValid(lineId)
+		//	)){ //can only be a non-inclusive wback
+		//	////<MESI> assert(nonInclusiveHack);
+		//	assert((req.type == PUTS) || (req.type == PUTX));
+		//	respCycle = startCycle;//<MESI> bcc->processNonInclusiveWriteback(req.lineAddr, req.type, startCycle, req.state, req.srcId, req.flags);
+		//}
+		//else {
 
-			//if needed, fetch line or upgrade miss from upper level
-			respCycle = startCycle;//<MESI> bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
-			if (getDoneCycle) *getDoneCycle = respCycle;
-			if (!isPrefetch) { //prefetches only touch bcc; the demand request from the core will pull the line to lower level
-				//At this point, the line is in a good state w.r.t. upper levels
-				//bool lowerLevelWriteback = false;
-				//change directory info, invalidate other children if needed, tell requester about its state
-				respCycle = startCycle;
-				//<MESI> tcc->processAccess(req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state, &lowerLevelWriteback, respCycle, req.srcId, flags);
-				//<MESI>if (lowerLevelWriteback) {
-				//<MESI>	//Essentially, if tcc induced a writeback, bcc may need to do an E->M transition to reflect that the cache now has dirty data
-				//<MESI> bcc->processWritebackOnAccess(req.lineAddr, lineId, req.type);
-				//<MESI>}
-			}
-		}
+		//Prefetches are side requests and get handled a bit differently
+		//bool isPrefetch = req.flags & MemReq::PREFETCH;
+		//assert(!isPrefetch || req.type == GETS);
+		//<MESI>uint32_t flags = req.flags & ~MemReq::PREFETCH; //always clear PREFETCH, this flag cannot propagate up
+
+		//if needed, fetch line or upgrade miss from upper level
+		//respCycle = startCycle;//<MESI> bcc->processAccess(req.lineAddr, lineId, req.type, startCycle, req.srcId, flags);
+		//if (getDoneCycle) *getDoneCycle = respCycle;
+		//if (!isPrefetch) { //prefetches only touch bcc; the demand request from the core will pull the line to lower level
+		//At this point, the line is in a good state w.r.t. upper levels
+		//bool lowerLevelWriteback = false;
+		//change directory info, invalidate other children if needed, tell requester about its state
+		//respCycle = startCycle;
+		//<MESI> tcc->processAccess(req.lineAddr, lineId, req.type, req.childId, bcc->isExclusive(lineId), req.state, &lowerLevelWriteback, respCycle, req.srcId, flags);
+		//<MESI>if (lowerLevelWriteback) {
+		//<MESI>	//Essentially, if tcc induced a writeback, bcc may need to do an E->M transition to reflect that the cache now has dirty data
+		//<MESI> bcc->processWritebackOnAccess(req.lineAddr, lineId, req.type);
+		//<MESI>}
+		//}
+		//}
 		return respCycle;
 	}
 

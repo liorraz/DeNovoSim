@@ -34,6 +34,7 @@
 void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 	info("init parent with name %s and type %s", _parent->getName(), typeid((*_parent)).name());
 	parent = _parent;
+	parentRTT = (network) ? network->getRTT(name, parent->getName()) : 0
 }
 
 
@@ -43,7 +44,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t n
 	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
 	}
-	//DeNovoState* state = &deNovoStatesArray[lineId];
+	DeNovoState* state = &deNovoStatesArray[lineId];
     	
 	switch (type) {
         // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
@@ -60,19 +61,18 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t n
             //profPUTX.inc();
             break;
         case GETS:
-            //if (*state == I) {
-            //    uint32_t parentId = getParentId(lineAddr);
-            //    MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};
-            //    uint32_t nextLevelLat = parents[parentId]->access(req) - cycle;
-            //    uint32_t netLat = parentRTTs[parentId];
-            //    profGETNextLevelLat.inc(nextLevelLat);
-            //    profGETNetLat.inc(netLat);
-            //    respCycle += nextLevelLat + netLat;
-            //    profGETSMiss.inc();
-            //    assert(*state == S || *state == E);
-            //} else {
-            //    profGETSHit.inc();
-            //}
+            if (*state == Invalid) { // miss - get from LLC
+                MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};
+                uint32_t nextLevelLat = parent->access(req) - cycle;
+                uint32_t netLat = parentRTT;
+                //profGETNextLevelLat.inc(nextLevelLat);
+                //profGETNetLat.inc(netLat);
+                respCycle += nextLevelLat + netLat;
+                //profGETSMiss.inc();
+                //LIOR TEMP assert(*state == Valid || *state == Registerd);
+            } else {
+                //profGETSHit.inc();
+            }
             break;
         case GETX:
             //if (*state == I || *state == S) {
@@ -125,6 +125,11 @@ void DeNovoLLCImpl::init(const g_vector<BaseCache*>& _children, Network* network
 	}
 }
 
+uint64_t DeNovoLLCImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId){
+
+	return 0;
+
+}
 
 
 /* Do a simple XOR block hash on address to determine its bank. Hacky for now,
