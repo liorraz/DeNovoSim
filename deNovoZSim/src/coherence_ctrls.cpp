@@ -128,7 +128,6 @@ void DeNovoLLCImpl::init(const g_vector<BaseCache*>& _children, Network* network
 }
 
 uint64_t DeNovoLLCImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId){
-	DeNovoState* state = &deNovoStatesArray[lineId];
 	if (*state == Invalid) {
 		*state = Valid; // temp
 	}

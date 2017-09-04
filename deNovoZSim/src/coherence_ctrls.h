@@ -103,7 +103,7 @@ public:
 class DeNovoLLCImpl{
 private:
 	g_vector<BaseCache*> children;
-	DeNovoState* deNovoStatesArray;
+	DeNovoState* state;
 	uint32_t numLines;
 
 
@@ -114,10 +114,7 @@ private:
 public:
 	DeNovoLLCImpl(uint32_t _numLines) : numLines(_numLines) {
 		info("number of lines in DeNovoLLCImpl is: %u", numLines);
-		deNovoStatesArray = gm_calloc<DeNovoState>(_numLines);
-		for (uint32_t i = 0; i < _numLines; i++) {
-			deNovoStatesArray[i] = Invalid;
-		}
+		*state = Invalid;
 		futex_init(&ccLock);
 	}
 
