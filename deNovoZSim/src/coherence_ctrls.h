@@ -256,7 +256,7 @@ public:
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
 		info("Set childern called on DeNovoCC with name: %s and %u children", name.c_str(), (uint32_t)children.size());
 		if (!impl){
-			info("from set children starting dev novo LLC impl for child");
+			info("************ from set children starting dev novo LLC impl for child");
 			impl = new DeNovoLLCImpl();
 		}
 		impl->initChildren(children, network, name.c_str());
