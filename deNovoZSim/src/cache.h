@@ -73,7 +73,7 @@ class Cache : public BaseCache {
 
 		// Lior temp till find way to work with filter cache
 		virtual uint64_t accessForProcess(MemReq& req){
-			cc->processAccess(req, 0, 0);
+			return cc->processAccess(req, 0, 0);
 		}
 
 
