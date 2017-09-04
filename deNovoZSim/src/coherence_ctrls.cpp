@@ -39,7 +39,7 @@ void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 
 
 
-uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
+uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags, MemObject* parentLLCObj) {
     uint64_t respCycle = cycle;
 	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
@@ -64,7 +64,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t n
             if (*state == Invalid) { // miss - get from LLC
                 MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};	
 				uint32_t nextLevelLat = 0;
-				info("parent llc type %s", typeid((*parentLLC)).name());
+				info("parent llc type %s", typeid((*parentLLCObj)).name());
 				parentLLC->accessForProcess(req);
                 uint32_t netLat = parentRTT;
                 //profGETNextLevelLat.inc(nextLevelLat);

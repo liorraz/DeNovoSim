@@ -138,6 +138,7 @@ private:
 	DeNovoImpl* impl;
 	const uint32_t numLines;
 	g_string name;
+	MemObject* parentLLC;
 
 public:
 	//Initialization
@@ -151,6 +152,7 @@ public:
 		}
 		impl = new DeNovoImpl(numLines, childId);
 		impl->init(parents[0], network, name.c_str());
+		parentLLC = parents[0];
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
@@ -197,7 +199,7 @@ public:
 		assert(!getDoneCycle);
 		//if needed, fetch line or upgrade miss from upper level
 		uint64_t respCycle = startCycle;
-		impl->processAccess(req.lineAddr, lineId, numLines, req.type, startCycle, req.srcId, req.flags);
+		impl->processAccess(req.lineAddr, lineId, numLines, req.type, startCycle, req.srcId, req.flags, parentLLC);
 		//at this point, the line is in a good state w.r.t. upper levels
 		return respCycle;
 	}
