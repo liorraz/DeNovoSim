@@ -33,6 +33,7 @@
 */
 void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
 	info("init parent with name %s and type %s", _parent->getName(), typeid((*_parent)).name());
+	parentLLC = _parent;
 	parentRTT = (network) ? network->getRTT(name, parentLLC->getName()) : 0;
 }
 
