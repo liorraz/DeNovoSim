@@ -65,7 +65,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t n
                 MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};	
 				uint32_t nextLevelLat = 0;
 				info("parent llc type %s", typeid((*parentLLCObj)).name());
-				parentLLC->accessForProcess(req);
+				parentLLCObj->accessForProcess(req);
                 uint32_t netLat = parentRTT;
                 //profGETNextLevelLat.inc(nextLevelLat);
                 //profGETNetLat.inc(netLat);
