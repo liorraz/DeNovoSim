@@ -64,6 +64,7 @@ uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t n
             if (*state == Invalid) { // miss - get from LLC
                 MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};	
 				uint32_t nextLevelLat = 0;
+				info("parent llc type %s", typeid((*parentLLCObj)).name());
 				parentLLCObj->accessForProcess(req);
                 uint32_t netLat = parentRTT;
                 //profGETNextLevelLat.inc(nextLevelLat);
@@ -128,10 +129,7 @@ void DeNovoLLCImpl::init(const g_vector<BaseCache*>& _children, Network* network
 }
 
 uint64_t DeNovoLLCImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId){
-	DeNovoState* state = &deNovoStatesArray[lineId];
-	if (*state == Invalid) {
-		*state = Valid; // temp
-	}
+	info("process access LLC");
 	return 0;
 
 }
