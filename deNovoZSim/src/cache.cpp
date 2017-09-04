@@ -62,24 +62,23 @@ uint64_t Cache::access(MemReq& req) {
     uint64_t respCycle = req.cycle;
     bool skipAccess = cc->startAccess(req); //may need to skip access due to races (NOTE: may change req.type!)
     if (likely(!skipAccess)) {
-        bool updateReplacement = (req.type == GETS) || (req.type == GETX);
-        int32_t lineId = array->lookup(req.lineAddr, &req, updateReplacement);
-        respCycle += accLat;
+   //     bool updateReplacement = (req.type == GETS) || (req.type == GETX);
+   //     int32_t lineId = array->lookup(req.lineAddr, &req, updateReplacement);
+   //     respCycle += accLat;
 
-        if (lineId == -1 && cc->shouldAllocate(req)) {
-            //Make space for new line
-            Address wbLineAddr;
-            lineId = array->preinsert(req.lineAddr, &req, &wbLineAddr); //find the lineId to replace
-            trace(Cache, "[%s] Evicting 0x%lx", name.c_str(), wbLineAddr);
-			info("line id in cache is: %d ", lineId);
-            //Evictions are not in the critical path in any sane implementation -- we do not include their delays
-            //NOTE: We might be "evicting" an invalid line for all we know. Coherence controllers will know what to do
-            
-			// Lior -wait with evictions
-			//cc->processEviction(req, wbLineAddr, lineId, respCycle); //1. if needed, send invalidates/downgrades to lower level
+   //     if (lineId == -1 && cc->shouldAllocate(req)) {
+   //         //Make space for new line
+   //         Address wbLineAddr;
+   //         lineId = array->preinsert(req.lineAddr, &req, &wbLineAddr); //find the lineId to replace
+   //         trace(Cache, "[%s] Evicting 0x%lx", name.c_str(), wbLineAddr);
+   //         //Evictions are not in the critical path in any sane implementation -- we do not include their delays
+   //         //NOTE: We might be "evicting" an invalid line for all we know. Coherence controllers will know what to do
+   //         
+			//// Lior -wait with evictions
+			////cc->processEviction(req, wbLineAddr, lineId, respCycle); //1. if needed, send invalidates/downgrades to lower level
 
-            array->postinsert(req.lineAddr, &req, lineId); //do the actual insertion. NOTE: Now we must split insert into a 2-phase thing because cc unlocks us.
-        }
+   //         array->postinsert(req.lineAddr, &req, lineId); //do the actual insertion. NOTE: Now we must split insert into a 2-phase thing because cc unlocks us.
+   //     }
         // Enforce single-record invariant: Writeback access may have a timing
         // record. If so, read it.
         // Lior temp comment with record
