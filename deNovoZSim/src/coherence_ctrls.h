@@ -87,7 +87,7 @@ public:
 
 	void init(MemObject* _parent, Network* network, const char* name);
 
-	uint64_t processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags);
+	uint64_t processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags, MemObject* parentLLCObj);
 
 	inline void lock() {
 		futex_lock(&ccLock);
