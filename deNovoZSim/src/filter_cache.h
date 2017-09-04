@@ -126,7 +126,8 @@ class FilterCache : public Cache {
         }
 
         uint64_t replace(Address vLineAddr, uint32_t idx, bool isLoad, uint64_t curCycle) {
-            Address pLineAddr = procMask | vLineAddr;
+			info("replace filter chache");
+			Address pLineAddr = procMask | vLineAddr;
 			DeNovoState dummyState = DeNovoState::Invalid;
             //futex_lock(&filterLock);
             MemReq req = {pLineAddr, isLoad? GETS : GETX, 0, &dummyState, curCycle, &filterLock, dummyState, srcId, reqFlags};
