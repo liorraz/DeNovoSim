@@ -67,7 +67,7 @@ class DeNovoImpl{
 
 private:
 	DeNovoState* deNovoStatesArray;
-	MemObject* parent;
+	MemObject* parentLLC;
 	uint32_t parentRTT;
 	uint32_t selfId;
 
@@ -299,6 +299,7 @@ public:
 			return false;
 		}
 	}
+
 
 	uint64_t processEviction(const MemReq& triggerReq, Address wbLineAddr, int32_t lineId, uint64_t startCycle) {
 		//bool lowerLevelWriteback = false;
