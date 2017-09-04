@@ -126,7 +126,9 @@ class MemObject : public GlobAlloc {
         virtual uint64_t access(MemReq& req) = 0;
         virtual void initStats(AggregateStat* parentStat) {}
 		virtual const char* getName() = 0;	
-		virtual uint64_t accessForProcess(MemReq& req) = 0;
+		virtual uint64_t accessForProcess(MemReq& req) {
+			return 0;
+		}
 };
 
 /* Base class for all cache objects */
