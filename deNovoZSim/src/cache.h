@@ -72,9 +72,10 @@ class Cache : public BaseCache {
         }
 
 		// Lior temp till find way to work with filter cache
-		virtual CC* getCC() {
-			return cc;
+		virtual uint64_t accessForProcess(MemReq& req){
+			cc->processAccess(req, 0, 0);
 		}
+
 
     protected:
         void initCacheStats(AggregateStat* cacheStat);
