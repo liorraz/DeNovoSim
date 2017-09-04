@@ -71,6 +71,12 @@ class Cache : public BaseCache {
             return finishInvalidate(req);
         }
 
+
+		// Lior temp till find way to work with filter cache
+		CC* getCC(){
+			return cc;
+		}
+
     protected:
         void initCacheStats(AggregateStat* cacheStat);
 
