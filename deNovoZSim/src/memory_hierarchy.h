@@ -127,6 +127,7 @@ class MemObject : public GlobAlloc {
         virtual uint64_t access(MemReq& req) = 0;
         virtual void initStats(AggregateStat* parentStat) {}
         virtual const char* getName() = 0;
+		virtual CC* getCC() = 0; // for caches
 };
 
 /* Base class for all cache objects */
@@ -135,7 +136,8 @@ class BaseCache : public MemObject {
         virtual void setParents(uint32_t _childId, const g_vector<MemObject*>& parents, Network* network) = 0;
         virtual void setChildren(const g_vector<BaseCache*>& children, Network* network) = 0;
         virtual uint64_t invalidate(const InvReq& req) = 0;
-		virtual CC* getCC() = 0;
+
+		
 };
 
 #endif  // MEMORY_HIERARCHY_H_
