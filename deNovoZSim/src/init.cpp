@@ -271,27 +271,31 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
 		cc = new DeNovoCC(numLines, name);
     }
     rp->setCC(cc);
-    if (!isTerminal) {
-        if (type == "Simple") {
-            cache = new Cache(numLines, cc, array, rp, accLat, invLat, name);
-        } else if (type == "Timing") {
-            uint32_t mshrs = config.get<uint32_t>(prefix + "mshrs", 16);
-            uint32_t tagLat = config.get<uint32_t>(prefix + "tagLat", 5);
-            uint32_t timingCandidates = config.get<uint32_t>(prefix + "timingCandidates", candidates);
-            cache = new TimingCache(numLines, cc, array, rp, accLat, invLat, mshrs, tagLat, ways, timingCandidates, domain, name);
-        } else if (type == "Tracing") {
-            g_string traceFile = config.get<const char*>(prefix + "traceFile","");
-            if (traceFile.empty()) traceFile = g_string(zinfo->outputDir) + "/" + name + ".trace";
-            cache = new TracingCache(numLines, cc, array, rp, accLat, invLat, traceFile, name);
-        } else {
-            panic("Invalid cache type %s", type.c_str());
-        }
-    } else {
-        //Filter cache optimization
-        if (type != "Simple") panic("Terminal cache %s can only have type == Simple", name.c_str());
-        if (arrayType != "SetAssoc" || hashType != "None" || replType != "LRU") panic("Invalid FilterCache config %s", name.c_str());
-        cache = new FilterCache(numSets, numLines, cc, array, rp, accLat, invLat, name);
-    }
+	
+	// Lior, for simplicity and lack of time i use same cache and only replace the CC
+	cache = new Cache(numLines, cc, array, rp, accLat, invLat, name);
+
+    //if (!isTerminal) {
+    //    if (type == "Simple") {
+    //        cache = new Cache(numLines, cc, array, rp, accLat, invLat, name);
+    //    } else if (type == "Timing") {
+    //        uint32_t mshrs = config.get<uint32_t>(prefix + "mshrs", 16);
+    //        uint32_t tagLat = config.get<uint32_t>(prefix + "tagLat", 5);
+    //        uint32_t timingCandidates = config.get<uint32_t>(prefix + "timingCandidates", candidates);
+    //        cache = new TimingCache(numLines, cc, array, rp, accLat, invLat, mshrs, tagLat, ways, timingCandidates, domain, name);
+    //    } else if (type == "Tracing") {
+    //        g_string traceFile = config.get<const char*>(prefix + "traceFile","");
+    //        if (traceFile.empty()) traceFile = g_string(zinfo->outputDir) + "/" + name + ".trace";
+    //        cache = new TracingCache(numLines, cc, array, rp, accLat, invLat, traceFile, name);
+    //    } else {
+    //        panic("Invalid cache type %s", type.c_str());
+    //    }
+    //} else {
+    //    //Filter cache optimization
+    //    if (type != "Simple") panic("Terminal cache %s can only have type == Simple", name.c_str());
+    //    if (arrayType != "SetAssoc" || hashType != "None" || replType != "LRU") panic("Invalid FilterCache config %s", name.c_str());
+    //    cache = new FilterCache(numSets, numLines, cc, array, rp, accLat, invLat, name);
+    //}
 
 #if 0
     info("Built L%d bank, %d bytes, %d lines, %d ways (%d candidates if array is Z), %s array, %s hash, %s replacement, accLat %d, invLat %d name %s",
