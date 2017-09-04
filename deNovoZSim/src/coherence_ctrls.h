@@ -63,11 +63,11 @@ public:
 };
 
 
-class DeNovoTerminalImpl{
+class DeNovoImpl{
 
 private:
 	DeNovoState* deNovoStatesArray;
-	MemObject* parent; // llc
+	MemObject* parent;
 	uint32_t selfId;
 
 	PAD();
@@ -75,7 +75,7 @@ private:
 	PAD();
 
 public:
-	DeNovoTerminalImpl(uint32_t _numLines, uint32_t _selfId) : selfId(_selfId) {
+	DeNovoImpl(uint32_t _numLines, uint32_t _selfId) : selfId(_selfId) {
 		deNovoStatesArray = gm_calloc<DeNovoState>(_numLines);
 		info("number of lines in DeNovoImpl is: %u", _numLines);
 		for (uint32_t i = 0; i < _numLines; i++) {
@@ -101,22 +101,21 @@ public:
 
 class DeNovoLLCImpl{
 private:
-	MemObject* parent; // mem
-	g_vector<BaseCache*> children; // caches
-	DeNovoState* deNovoStatesArray;
+	g_vector<BaseCache*> children;
+
+	uint32_t numLines;
+
 
 	PAD();
 	lock_t ccLock;
 	PAD();
 public:
-	DeNovoLLCImpl() {
+	DeNovoLLCImpl(uint32_t _numLines) : numLines(_numLines) {
+		info("number of lines in DeNovoLLCImpl is: %u", numLines);
 		futex_init(&ccLock);
 	}
 
-
-	void initParent(MemObject* _parent, Network* network, const char* name);
-
-	void initChildren(const g_vector<BaseCache*>& _children, Network* network, const char* name);
+	void init(const g_vector<BaseCache*>& _children, Network* network, const char* name);
 
 	inline void lock() {
 		futex_lock(&ccLock);
@@ -132,10 +131,9 @@ public:
 // for simplicity we assume only 2 level of caches - so parent is always signel as
 class DeNovoTerminalCC : public CC {
 private:
+	DeNovoImpl* impl;
 	const uint32_t numLines;
 	g_string name;
-	DeNovoTerminalImpl* impl;
-
 
 public:
 	//Initialization
@@ -147,7 +145,7 @@ public:
 		if (parents.size() > 1){
 			panic("[%s] DeNovoTerminalCC parents size (%d) > 1", name.c_str(), (uint32_t)parents.size());
 		}
-		impl = new DeNovoTerminalImpl(numLines, childId);
+		impl = new DeNovoImpl(numLines, childId);
 		impl->init(parents[0], network, name.c_str());
 	}
 
@@ -194,7 +192,7 @@ public:
 		assert(lineId != -1);
 		assert(!getDoneCycle);
 		//if needed, fetch line or upgrade miss from upper level
-		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId, numLines, req.type, startCycle, req.srcId, req.flags);
+		uint64_t respCycle = impl->processAccess(req.lineAddr, lineId,numLines, req.type, startCycle, req.srcId, req.flags);
 		//at this point, the line is in a good state w.r.t. upper levels
 		return respCycle;
 	}
@@ -231,9 +229,10 @@ public:
 // Lior: this is the LLC
 class DeNovoCC : public CC {
 private:
+	DeNovoImpl* memoryImpl;
+	DeNovoLLCImpl* llcImpl;
 	uint32_t numLines;
 	g_string name;
-	DeNovoLLCImpl* impl;
 
 public:
 	//Initialization
@@ -246,20 +245,14 @@ public:
 			panic("[%s] DeNovoCC parents size (%u) > 1", name.c_str(), (uint32_t)parents.size());
 		}
 
-		if (!impl){
-			info("from set parents starting dev novo LLC impl for child %u", childId);
-			impl = new DeNovoLLCImpl();
-		}
-		impl->initParent(parents[0], network, name.c_str());
+		memoryImpl = new DeNovoImpl(numLines, childId);
+		memoryImpl->init(parents[0], network, name.c_str());
 	}
 
 	void setChildren(const g_vector<BaseCache*>& children, Network* network) {
 		info("Set childern called on DeNovoCC with name: %s and %u children", name.c_str(), (uint32_t)children.size());
-		if (!impl){
-			info("from set children starting dev novo LLC impl for child %u", childId);
-			impl = new DeNovoLLCImpl();
-		}
-		impl->initChildren(children, network, name.c_str());
+		llcImpl = new DeNovoLLCImpl(numLines);
+		llcImpl->init(children, network, name.c_str());
 	}
 
 	void initStats(AggregateStat* cacheStat) {
@@ -279,7 +272,8 @@ public:
 			futex_unlock(req.childLock);
 		}
 
-		impl->lock(); // only 1 lock, not 2
+		llcImpl->lock(); //must lock llcImpl FIRST
+		memoryImpl->lock();
 
 		/* The situation is now stable, true race-wise. No one can touch the child state, because we hold
 		* both parent's locks. So, we first handle races, which may cause us to skip the access.
@@ -353,19 +347,20 @@ public:
 			futex_lock(req.childLock);
 		}
 
-		impl->unlock(); // only 1 unlock, not 2
+		memoryImpl->unlock();
+		llcImpl->unlock();
 	}
 
 	//Inv methods
 	void startInv() {
-		impl->lock(); //note we don't grab tcc; tcc serializes multiple up accesses, down accesses don't see it
+		memoryImpl->lock(); //note we don't grab tcc; tcc serializes multiple up accesses, down accesses don't see it
 	}
 
 	uint64_t processInv(const InvReq& req, int32_t lineId, uint64_t startCycle) {
 		uint64_t respCycle = startCycle;//<MESI> tcc->processInval(req.lineAddr, lineId, req.type, req.writeback, startCycle, req.srcId); //send invalidates or downgrades to children
 		//<MESI> bcc->processInval(req.lineAddr, lineId, req.type, req.writeback); //adjust our own state
 
-		impl->unlock();
+		memoryImpl->unlock();
 		return respCycle;
 	}
 
