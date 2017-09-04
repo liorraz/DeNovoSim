@@ -67,7 +67,6 @@ class DeNovoImpl{
 
 private:
 	DeNovoState* deNovoStatesArray;
-	MemObject* parentLLC;
 	uint32_t parentRTT;
 	uint32_t selfId;
 
