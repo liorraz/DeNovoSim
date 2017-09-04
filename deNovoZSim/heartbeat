@@ -1,9 +1,9 @@
 Running on: rack-mad-03
-Start time: Sun Sep  3 23:04:50 2017
-Heartbeat time: Sun Sep  3 23:05:07 2017
+Start time: Mon Sep  4 23:35:36 2017
+Heartbeat time: Mon Sep  4 23:35:38 2017
 Stats since start:
- 400139 phases
- 4001390000 cycles
- 235375882 cycles/s
-Stats since last heartbeat (7s):
- 384752857 cycles/s
+ 102 phases
+ 1020000 cycles
+ 510000 cycles/s
+Stats since last heartbeat (1504557338s):
+ 0 cycles/s

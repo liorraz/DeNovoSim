@@ -255,21 +255,26 @@ BaseCache* BuildCacheBank(Config& config, const string& prefix, g_string& name, 
     uint32_t accLat = (isTerminal)? 0 : latency; //terminal caches has no access latency b/c it is assumed accLat is hidden by the pipeline
     uint32_t invLat = latency;
 
-    // Inclusion?
-    bool nonInclusiveHack = config.get<bool>(prefix + "nonInclusiveHack", false);
-    if (nonInclusiveHack) assert(type == "Simple" && !isTerminal);
+	// Inclusion is removed in DeNovo
+    //<MESI> Inclusion?
+	//<MESI> bool nonInclusiveHack = config.get<bool>(prefix + "nonInclusiveHack", false);
+    //<MESI> if (nonInclusiveHack) assert(type == "Simple" && !isTerminal);
 
     // Finally, build the cache
     Cache* cache;
     CC* cc;
     if (isTerminal) {
-	info("De Novo TERMINAL for name %s", name.c_str());
+	info("DeNovo TERMINAL for name %s", name.c_str());
         cc = new DeNovoTerminalCC(numLines, name);
     } else {
-	info("MESI for name %s",name.c_str());
-		cc = new DeNovoCC(numLines, nonInclusiveHack, name);
+	info("DeNon Non-Terminal for name %s",name.c_str());
+		cc = new DeNovoCC(numLines, name);
     }
     rp->setCC(cc);
+	
+	// Lior, for simplicity and lack of time i use same cache and only replace the CC
+	cache = new Cache(numLines, cc, array, rp, accLat, invLat, name);
+
     if (!isTerminal) {
         if (type == "Simple") {
             cache = new Cache(numLines, cc, array, rp, accLat, invLat, name);
@@ -778,7 +783,7 @@ static void InitSystem(Config& config) {
     for (pair<string, CacheGroup*> kv : cMap) delete kv.second;
     cMap.clear();
 
-    info("Lior Raz Initialized system with De Novo");
+    info("Initialized system with DeNovo");
 }
 
 static void PreInitStats() {

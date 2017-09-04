@@ -35,10 +35,10 @@ uint64_t SimpleMemory::access(MemReq& req) {
 			//<MESI>*req.state = I;
             break;
         case GETS:
-			//<MESI>*req.state = req.is(MemReq::NOEXCL)? S : E;
+			*req.state = Valid;/*MESI(req.is(MemReq::NOEXCL)? S : E*/
             break;
         case GETX:
-			//<MESI>*req.state = M;
+			*req.state = Registerd;
             break;
 
         default: panic("!?");
