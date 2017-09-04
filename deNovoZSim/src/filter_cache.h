@@ -126,26 +126,25 @@ class FilterCache : public Cache {
         }
 
         uint64_t replace(Address vLineAddr, uint32_t idx, bool isLoad, uint64_t curCycle) {
-			info("replace filter chache");
-			Address pLineAddr = procMask | vLineAddr;
+            Address pLineAddr = procMask | vLineAddr;
 			DeNovoState dummyState = DeNovoState::Invalid;
-            //futex_lock(&filterLock);
+            futex_lock(&filterLock);
             MemReq req = {pLineAddr, isLoad? GETS : GETX, 0, &dummyState, curCycle, &filterLock, dummyState, srcId, reqFlags};
             uint64_t respCycle  = access(req);
 
             //Due to the way we do the locking, at this point the old address might be invalidated, but we have the new address guaranteed until we release the lock
 
             //Careful with this order
-            //Address oldAddr = filterArray[idx].rdAddr;
-            //filterArray[idx].wrAddr = isLoad? -1L : vLineAddr;
-            //filterArray[idx].rdAddr = vLineAddr;
+            Address oldAddr = filterArray[idx].rdAddr;
+            filterArray[idx].wrAddr = isLoad? -1L : vLineAddr;
+            filterArray[idx].rdAddr = vLineAddr;
 
             //For LSU simulation purposes, loads bypass stores even to the same line if there is no conflict,
             //(e.g., st to x, ld from x+8) and we implement store-load forwarding at the core.
             //So if this is a load, it always sets availCycle; if it is a store hit, it doesn't
-            //if (oldAddr != vLineAddr) filterArray[idx].availCycle = respCycle;
+            if (oldAddr != vLineAddr) filterArray[idx].availCycle = respCycle;
 
-            //futex_unlock(&filterLock);
+            futex_unlock(&filterLock);
             return respCycle;
         }
 
