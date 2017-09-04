@@ -30,94 +30,95 @@
 
 /*
 	DeNovoImpl
-*/
-void DeNovoImpl::init(MemObject* _parent, Network* network, const char* name){
-	info("init parent with name %s and type %s", _parent->getName(), typeid((*_parent)).name());
+	*/
+void DeNovoTerminalImpl::init(MemObject* _parent, Network* network, const char* name){
+	info("init parent interminal cache with name %s and type %s", _parent->getName(), typeid((*_parent)).name());
 	parent = _parent;
 }
 
 
 
-uint64_t DeNovoImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
-    uint64_t respCycle = cycle;
+uint64_t DeNovoTerminalImpl::processAccess(Address lineAddr, uint32_t lineId, uint32_t numLines, AccessType type, uint64_t cycle, uint32_t srcId, uint32_t flags) {
+	uint64_t respCycle = cycle;
 	if (lineId > numLines) {
 		panic("lind id %u is bigger than number of lines %u !!! ", lineId, numLines);
 	}
 	//DeNovoState* state = &deNovoStatesArray[lineId];
-    	
-	switch (type) {
-        // A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
-        case PUTS: //Clean writeback, nothing to do (except profiling)
-            //assert(*state != I);
-            //profPUTS.inc();
-            break;
-        case PUTX: //Dirty writeback
-            //assert(*state == M || *state == E);
-            //if (*state == E) {
-            //    //Silent transition, record that block was written to
-            //   *state = M;
-            //}
-            //profPUTX.inc();
-            break;
-        case GETS:
-            //if (*state == I) {
-            //    uint32_t parentId = getParentId(lineAddr);
-            //    MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};
-            //    uint32_t nextLevelLat = parents[parentId]->access(req) - cycle;
-            //    uint32_t netLat = parentRTTs[parentId];
-            //    profGETNextLevelLat.inc(nextLevelLat);
-            //    profGETNetLat.inc(netLat);
-            //    respCycle += nextLevelLat + netLat;
-            //    profGETSMiss.inc();
-            //    assert(*state == S || *state == E);
-            //} else {
-            //    profGETSHit.inc();
-            //}
-            break;
-        case GETX:
-            //if (*state == I || *state == S) {
-            //    //Profile before access, state changes
-            //    if (*state == I) profGETXMissIM.inc();
-            //    else profGETXMissSM.inc();
-            //    uint32_t parentId = getParentId(lineAddr);
-            //    MemReq req = {lineAddr, GETX, selfId, state, cycle, &ccLock, *state, srcId, flags};
-            //    uint32_t nextLevelLat = parents[parentId]->access(req) - cycle;
-            //    uint32_t netLat = parentRTTs[parentId];
-            //    profGETNextLevelLat.inc(nextLevelLat);
-            //    profGETNetLat.inc(netLat);
-            //    respCycle += nextLevelLat + netLat;
-            //} else {
-            //    if (*state == E) {
-            //        // Silent transition
-            //        // NOTE: When do we silent-transition E->M on an ML hierarchy... on a GETX, or on a PUTX?
-            //        /* Actually, on both: on a GETX b/c line's going to be modified anyway, and must do it if it is the L1 (it's OK not
-            //         * to transition if L2+, we'll TX on the PUTX or invalidate, but doing it this way minimizes the differences between
-            //         * L1 and L2+ controllers); and on a PUTX, because receiving a PUTX while we're in E indicates the child did a silent
-            //         * transition and now that it is evictiong, it's our turn to maintain M info.
-            //         */
-            //        *state = M;
-            //    }
-            //    profGETXHit.inc();
-            //}
-            //assert_msg(*state == M, "Wrong final state on GETX, lineId %d numLines %d, finalState %s", lineId, numLines, MESIStateName(*state));
-            break;
 
-        default: panic("!?");
-    }
-    assert_msg(respCycle >= cycle, "XXX %ld %ld", respCycle, cycle);
-    return respCycle;
+	switch (type) {
+		// A PUTS/PUTX does nothing w.r.t. higher coherence levels --- it dies here
+	case PUTS: //Clean writeback, nothing to do (except profiling)
+		//assert(*state != I);
+		//profPUTS.inc();
+		break;
+	case PUTX: //Dirty writeback
+		//assert(*state == M || *state == E);
+		//if (*state == E) {
+		//    //Silent transition, record that block was written to
+		//   *state = M;
+		//}
+		//profPUTX.inc();
+		break;
+	case GETS:
+		//if (*state == I) {
+		//    uint32_t parentId = getParentId(lineAddr);
+		//    MemReq req = {lineAddr, GETS, selfId, state, cycle, &ccLock, *state, srcId, flags};
+		//    uint32_t nextLevelLat = parents[parentId]->access(req) - cycle;
+		//    uint32_t netLat = parentRTTs[parentId];
+		//    profGETNextLevelLat.inc(nextLevelLat);
+		//    profGETNetLat.inc(netLat);
+		//    respCycle += nextLevelLat + netLat;
+		//    profGETSMiss.inc();
+		//    assert(*state == S || *state == E);
+		//} else {
+		//    profGETSHit.inc();
+		//}
+		break;
+	case GETX:
+		//if (*state == I || *state == S) {
+		//    //Profile before access, state changes
+		//    if (*state == I) profGETXMissIM.inc();
+		//    else profGETXMissSM.inc();
+		//    uint32_t parentId = getParentId(lineAddr);
+		//    MemReq req = {lineAddr, GETX, selfId, state, cycle, &ccLock, *state, srcId, flags};
+		//    uint32_t nextLevelLat = parents[parentId]->access(req) - cycle;
+		//    uint32_t netLat = parentRTTs[parentId];
+		//    profGETNextLevelLat.inc(nextLevelLat);
+		//    profGETNetLat.inc(netLat);
+		//    respCycle += nextLevelLat + netLat;
+		//} else {
+		//    if (*state == E) {
+		//        // Silent transition
+		//        // NOTE: When do we silent-transition E->M on an ML hierarchy... on a GETX, or on a PUTX?
+		//        /* Actually, on both: on a GETX b/c line's going to be modified anyway, and must do it if it is the L1 (it's OK not
+		//         * to transition if L2+, we'll TX on the PUTX or invalidate, but doing it this way minimizes the differences between
+		//         * L1 and L2+ controllers); and on a PUTX, because receiving a PUTX while we're in E indicates the child did a silent
+		//         * transition and now that it is evictiong, it's our turn to maintain M info.
+		//         */
+		//        *state = M;
+		//    }
+		//    profGETXHit.inc();
+		//}
+		//assert_msg(*state == M, "Wrong final state on GETX, lineId %d numLines %d, finalState %s", lineId, numLines, MESIStateName(*state));
+		break;
+
+	default: panic("!?");
+	}
+	assert_msg(respCycle >= cycle, "XXX %ld %ld", respCycle, cycle);
+	return respCycle;
 }
 
 
 /*
 	DeNovoLLCImpl
-*/
+	*/
+void DeNovoLLCImpl::initParent(MemObject* _parent, Network* network, const char* name){
+	info("init parent on LLC with name %s and type %s", _parent->getName(), typeid((*_parent)).name());
+	parent = _parent;
 
-void DeNovoLLCImpl::init(const g_vector<BaseCache*>& _children, Network* network, const char* name) {
-	if (_children.size() > MAX_CACHE_CHILDREN) {
-		panic("[%s] Children size (%d) > MAX_CACHE_CHILDREN (%d)", name, (uint32_t)_children.size(), MAX_CACHE_CHILDREN);
-	}
+}
 
+void DeNovoLLCImpl::initChildren(const g_vector<BaseCache*>& _children, Network* network, const char* name){
 	children.resize(_children.size());
 	for (uint32_t c = 0; c < children.size(); c++) {
 		info("init child with name %s and type %s", _children[c]->getName(), typeid((*_children[c])).name());
