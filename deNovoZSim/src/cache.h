@@ -33,6 +33,7 @@
 #include "memory_hierarchy.h"
 #include "repl_policies.h"
 #include "stats.h"
+#include "log.h"
 
 class Network;
 
@@ -73,6 +74,7 @@ class Cache : public BaseCache {
 
 		// Lior temp till find way to work with filter cache
 		virtual void accessForProcess(MemReq& req){
+			info("simple cache access for process");
 			cc->processAccess(req, 0, 0);
 		}
 
