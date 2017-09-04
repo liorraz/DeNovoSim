@@ -128,7 +128,7 @@ class MemObject : public GlobAlloc {
         virtual void initStats(AggregateStat* parentStat) {}
 		virtual const char* getName() = 0;	
 		virtual void accessForProcess(MemReq& req) {
-			info("MemObject access for process");
+			
 		}
 };
 
