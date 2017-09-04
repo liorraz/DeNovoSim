@@ -73,7 +73,7 @@ class Cache : public BaseCache {
 
 
 		// Lior temp till find way to work with filter cache
-		CC* getCC(){
+		virtual CC* getCC(){
 			return cc;
 		}
 

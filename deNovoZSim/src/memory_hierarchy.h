@@ -32,6 +32,7 @@
 #include "g_std/g_vector.h"
 #include "galloc.h"
 #include "locks.h"
+#include "coherence_ctrls.h"
 
 /** TYPES **/
 
@@ -134,6 +135,7 @@ class BaseCache : public MemObject {
         virtual void setParents(uint32_t _childId, const g_vector<MemObject*>& parents, Network* network) = 0;
         virtual void setChildren(const g_vector<BaseCache*>& children, Network* network) = 0;
         virtual uint64_t invalidate(const InvReq& req) = 0;
+		virtual CC* getCC() = 0;
 };
 
 #endif  // MEMORY_HIERARCHY_H_
